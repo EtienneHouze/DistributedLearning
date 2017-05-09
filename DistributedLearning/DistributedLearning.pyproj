@@ -23,6 +23,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DistributedLearning.py" />
+    <Compile Include="helpers\labels.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="helpers\preprocess.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="helpers\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -31,6 +40,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="helpers\" />
     <Folder Include="src\" />
   </ItemGroup>
   <ItemGroup>
