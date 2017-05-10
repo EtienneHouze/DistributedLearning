@@ -2,8 +2,9 @@ import numpy as np
 from PIL import Image
 from os.path import join, basename, isfile, normpath
 from os import listdir, walk
+import random
 
-import labels
+import helpers.labels
 
 #======================================================================================================
     #Preprocess functions that can be used on images before feeding them into the net.
@@ -86,7 +87,8 @@ def produce_training_set(traindir, trainsize,numlabs=35):
     num_labels = numlabs
     indices = list(range(trainsize))
     random.shuffle(indices)
-    out = []
+    ins = []
+    labs = []
     hist = np.zeros((num_labels))
     for i in indices:
         Im = Image.open(normpath(join(traindir, '_' + str(i) + '_im_.png')))
@@ -95,8 +97,9 @@ def produce_training_set(traindir, trainsize,numlabs=35):
         lab = np.asarray(Label.convert(mode="L"), dtype=np.float32)
         new_hist, _ = np.histogram(lab, bins=num_labels)
         hist += new_hist
-        out.append([im, lab])
-    return out, hist
+        ins.append(im)
+        labs.append(lab)
+    return ins,labs, hist
 
 def produce_testing_set(testdir, testsize = 100, imH = 128, imW = 256):
     out = []

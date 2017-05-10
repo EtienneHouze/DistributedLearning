@@ -244,3 +244,9 @@ ModelManifest.xml
 Graph1\.dgml
 
 *.png
+
+*.hdf5
+
+DistributedLearning/logs/
+
+DistributedLearning/helpers/__pycache__/

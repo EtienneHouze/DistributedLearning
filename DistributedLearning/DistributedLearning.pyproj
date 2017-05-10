@@ -26,6 +26,9 @@
     <Compile Include="helpers\labels.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="helpers\models.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="helpers\preprocess.py">
       <SubType>Code</SubType>
     </Compile>
@@ -35,7 +38,7 @@
     <Compile Include="src\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\Model.py">
+    <Compile Include="src\CityScapeModel.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

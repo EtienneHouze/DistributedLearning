@@ -1,13 +1,15 @@
 from __future__ import print_function, absolute_import, division
 import json
 import os, sys
+from helpers import models
+from keras.models import Model, load_model, Sequential
 
-class Model:
+class CityScapeModel:
     """
-        A class describing models, with different properties stored in a dictionnary object.
+        A high-level, user friendly interface to create dense labelling model based on the Keras API.
         Properties :
             - name : a string, name of the model.
-            - 
+            - models : a list of Keras models, which the data will flow trhought sequentially.
         """
 #==============================================================================
     def __init__(self,dir = './default_model'):
@@ -17,7 +19,7 @@ class Model:
         """
 
         self.prop_dict = {}
-
+        self.models = Sequential()
         if ( not os.path.isdir(dir)):
             print("Model directory did not exist, creating from scratch")
             os.mkdir(dir)
@@ -46,4 +48,18 @@ class Model:
             Changes the name of the model as defined
         """
         self.prop_dict['name'] = name
+
+    def define_input(self,shape):
+        self.prop_dict['input_shape'] = shape
+        self.input = 
+
+    def define_output(self, output):
+        self.prop_dict['output_shape'] = shape
+
+    def add_network_from_builder(self, building_function):
+        if (building_function in models.models_dict.keys):
+            if (len(self.models)==0):
+
+                self.models.append(models.models_dict[building_function](
+        
 
