@@ -1,13 +1,9 @@
-from keras.models import Model
+from keras.models import Model, Sequential
 from keras.layers import Input,Conv2D
 from keras.initializers import random_uniform, zeros
+from keras.layers.advanced_activations import PReLU
 
 
-models_dict = {
-    'simple_model' : simple_model
-
-
-    }
 
 def simple_model(input_shape):
     ins = Input(shape = input_shape)
@@ -32,6 +28,136 @@ def simple_model(input_shape):
                kernel_initializer = random_uniform(minval = -0.1, maxval = 0.1),
                bias_initialzer = zeros()
                )(a)
-    outs = 
-    mod = Model(
     return mod
+
+def upscaled(input_shape, num_classes):
+    
+    mod = Sequential()
+
+    mod.add(Conv2D(filters = 16,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 1,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = 32,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 1,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = 64,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 2,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = 64,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 2,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = 128,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 4,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = 128,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 4,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = 128,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 8,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = 128,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 8,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = 256,
+                   kernel_size = (3,3),
+                   padding = 'same',
+                   dilation_rate = 16,
+                   activation = 'linear',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+    mod.add(PReLU())
+    mod.add(Conv2D(filters = num_classes,
+                   kernel_size = (1,1),
+                   padding = 'same',
+                   dilation_rate = 4,
+                   activation = 'softmax',
+                   use_bias = True,
+                   kernel_initializer = random_uniform(),
+                   bias_initializer = random_uniform(),
+                   input_shape = input_shape
+                   )
+            )
+
+    return mod
+
+models_dict = {
+    'simple_model' : simple_model,
+    'up' : upscaled
+
+    }
