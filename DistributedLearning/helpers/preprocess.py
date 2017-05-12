@@ -79,9 +79,9 @@ def produce_training_set(traindir, trainsize,numlabs=35):
             - traindir : path to the directory containing training images.
             - trainsize : an integer, the size of the training set we want to use. Must be lower than the number of images in the folde
         @ returns :
-            - out : a list of pairs [im,lab], with 
-                im : a 3D numpy array of the image
-                lab : a 2D numpy array of the dense labels
+            - ins : a 4D np array (trainsize* {imsize} * {channels}) of the images.
+            - labs : a 4D np array (trainsize * {imsize} * {numlabs+1}) one-hot encoding labels. The last label (index {numlabs}) signifies unlabelled.
+            - hist : list of histograms of the labels. 
     """
 
     num_labels = numlabs
@@ -97,8 +97,8 @@ def produce_training_set(traindir, trainsize,numlabs=35):
         lab = np.asarray(Label.convert(mode="L"), dtype=np.int)
         maxlabs = num_labels * np.ones_like(lab)
         lab = np.minimum(lab,maxlabs)
+        new_hist, _ = np.histogram(lab, bins=num_labels+1)
         lab = np.eye(num_labels+1)[lab]
-        new_hist, _ = np.histogram(lab, bins=num_labels)
         hist += new_hist
         ins.append(im)
         labs.append(lab)
@@ -116,7 +116,3 @@ def produce_testing_set(testdir, testsize = 100, imH = 128, imW = 256):
         out.append([im,lab])
     return out
 
-def one_hot(a,num_classes):
-    b = np.zeros(shape=(a.shape).append(num_classes))
-
- 

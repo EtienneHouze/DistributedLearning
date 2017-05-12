@@ -92,62 +92,57 @@ def upscaled(input_shape, num_classes):
                    kernel_size = (3,3),
                    padding = 'same',
                    dilation_rate = 4,
-                   activation = 'linear',
+                   activation = 'relu',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
                    bias_initializer = random_uniform(),
                    input_shape = input_shape
                    )
             )
-    mod.add(PReLU())
     mod.add(Conv2D(filters = 128,
                    kernel_size = (3,3),
                    padding = 'same',
                    dilation_rate = 4,
-                   activation = 'linear',
+                   activation = 'relu',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
                    bias_initializer = random_uniform(),
                    input_shape = input_shape
                    )
             )
-    mod.add(PReLU())
     mod.add(Conv2D(filters = 128,
                    kernel_size = (3,3),
                    padding = 'same',
                    dilation_rate = 8,
-                   activation = 'linear',
+                   activation = 'relu',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
                    bias_initializer = random_uniform(),
                    input_shape = input_shape
                    )
             )
-    mod.add(PReLU())
     mod.add(Conv2D(filters = 128,
                    kernel_size = (3,3),
                    padding = 'same',
                    dilation_rate = 8,
-                   activation = 'linear',
+                   activation = 'relu',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
                    bias_initializer = random_uniform(),
                    input_shape = input_shape
                    )
             )
-    mod.add(PReLU())
     mod.add(Conv2D(filters = 256,
                    kernel_size = (3,3),
                    padding = 'same',
                    dilation_rate = 16,
-                   activation = 'linear',
+                   activation = 'relu',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
                    bias_initializer = random_uniform(),
                    input_shape = input_shape
                    )
             )
-    mod.add(PReLU())
     mod.add(Conv2D(filters = num_classes,
                    kernel_size = (1,1),
                    padding = 'same',
