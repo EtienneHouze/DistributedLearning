@@ -99,10 +99,10 @@ def produce_training_set(traindir, trainsize,numlabs=35):
         lab = np.minimum(lab,maxlabs)
         new_hist, _ = np.histogram(lab, bins=num_labels+1)
         lab = np.eye(num_labels+1)[lab]
-        hist += new_hist
+        #hist += new_hist
         ins.append(im)
         labs.append(lab)
-    return ins,labs, hist
+    return ins,labs#, hist
 
 def produce_testing_set(testdir, testsize = 100, imH = 128, imW = 256):
     out = []

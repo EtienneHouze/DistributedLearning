@@ -180,8 +180,7 @@ def upscaled_truncated(input_shape, num_classes):
                    activation = 'linear',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
-                   bias_initializer = random_uniform(),
-                   input_shape = input_shape
+                   bias_initializer = random_uniform()
                    )
             )
     mod.add(PReLU())
@@ -192,8 +191,7 @@ def upscaled_truncated(input_shape, num_classes):
                    activation = 'linear',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
-                   bias_initializer = random_uniform(),
-                   input_shape = input_shape
+                   bias_initializer = random_uniform()
                    )
             )
     mod.add(PReLU())
@@ -204,8 +202,7 @@ def upscaled_truncated(input_shape, num_classes):
                    activation = 'linear',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
-                   bias_initializer = random_uniform(),
-                   input_shape = input_shape
+                   bias_initializer = random_uniform()
                    )
             )
     mod.add(PReLU())
@@ -217,8 +214,7 @@ def upscaled_truncated(input_shape, num_classes):
                    activation = 'softmax',
                    use_bias = True,
                    kernel_initializer = random_uniform(),
-                   bias_initializer = random_uniform(),
-                   input_shape = input_shape
+                   bias_initializer = random_uniform()
                    )
             )
 
