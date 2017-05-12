@@ -250,3 +250,5 @@ Graph1\.dgml
 DistributedLearning/logs/
 
 DistributedLearning/helpers/__pycache__/
+
+DistributedLearning/test/

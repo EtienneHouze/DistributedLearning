@@ -5,13 +5,14 @@ from keras.callbacks import TensorBoard
 from keras.optimizers import SGD
 from keras.utils import plot_model
 import keras.backend as K
+import tensorflow as tf
 
 import pydot_ng
 import numpy as np
 import h5py
 import keras
 from helpers import preprocess
-from helpers import models
+from helpers import models 
 
 
 # Generate dummy data
@@ -22,11 +23,11 @@ x_train, y_train, _ = preprocess.produce_training_set(traindir = 'D:/EtienneData
 x_train = np.asarray(x_train)
 y_train = np.asarray(y_train)
 #y_train = K.one_hot(y_train,num_classes = 18)
-y_labs = keras.utils.to_categorical(y_train)
-print(y_labs.shape)
+#y_labs = keras.utils.to_categorical(y_train)
+#print(y_labs.shape)
 
-model = models.models_dict['up'](input_shape = (256,512,3),
-                                 num_classes = 18
+model = models.models_dict['up_mini'](input_shape = (256,512,3),
+                                 num_classes = 19
                                  )
 # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
 # this applies 32 convolution filters of size 3x3 each.
@@ -47,8 +48,9 @@ model = models.models_dict['up'](input_shape = (256,512,3),
 
 sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 model.compile(loss='categorical_crossentropy', optimizer=sgd)
+tens = TensorBoard(log_dir = './test', histogram_freq = 1, write_graph = True, write_images = True)
 
 model.summary()
-model.fit(x_train, y_labs, epochs=20, verbose=2 , batch_size=5)
+model.fit(x_train, y_train, epochs=20, verbose=2 , batch_size=5, callbacks = [tens])
 #model.save(filepath = 'model.hdf5')
-plot_model(model, to_file='modeltest.png')
+plot_model(model, to_file='modeltest.png',show_shapes=True)

@@ -94,7 +94,10 @@ def produce_training_set(traindir, trainsize,numlabs=35):
         Im = Image.open(normpath(join(traindir, '_' + str(i) + '_im_.png')))
         im = np.asarray(Im, dtype=np.float32)
         Label = Image.open(join(traindir, '_' + str(i) + '_lab_.png'))
-        lab = np.asarray(Label.convert(mode="L"), dtype=np.float32)
+        lab = np.asarray(Label.convert(mode="L"), dtype=np.int)
+        maxlabs = num_labels * np.ones_like(lab)
+        lab = np.minimum(lab,maxlabs)
+        lab = np.eye(num_labels+1)[lab]
         new_hist, _ = np.histogram(lab, bins=num_labels)
         hist += new_hist
         ins.append(im)
@@ -112,4 +115,8 @@ def produce_testing_set(testdir, testsize = 100, imH = 128, imW = 256):
         lab = np.asarray(Label.convert(mode="L"), dtype=np.float32)
         out.append([im,lab])
     return out
+
+def one_hot(a,num_classes):
+    b = np.zeros(shape=(a.shape).append(num_classes))
+
  
