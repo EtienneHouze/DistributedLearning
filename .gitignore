@@ -262,3 +262,7 @@ DistributedLearning/default_model/
 DistributedLearning/DistributedLearning\.py
 
 \.idea/
+
+DistributedLearning/test_model/
+
+DistributedLearning/default_model_with_disp/

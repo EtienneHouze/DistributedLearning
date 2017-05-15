@@ -18,7 +18,8 @@ def simple_model(input_shape):
                padding = 'same',
                use_bias = True,
                kernel_initializer = random_uniform(minval = -0.1, maxval = 0.1),
-               bias_initialzer = zeros()
+               bias_initialzer = zeros(),
+               __name__ = 'Test'
                )(ins)
     a = Conv2D(filters = 32, 
                kernel_size = (3,3),
@@ -169,7 +170,8 @@ def upscaled_truncated(input_shape, num_classes):
                    use_bias = True,
                    kernel_initializer = random_uniform(),
                    bias_initializer = random_uniform(),
-                   input_shape = input_shape
+                   input_shape = input_shape,
+                   name = 'test'
                    )
             )
     mod.add(PReLU())
