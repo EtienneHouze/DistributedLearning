@@ -177,7 +177,7 @@ def produce_training_set(traindir, trainsize, numlabs=35):
         # hist += new_hist
         ins.append(im)
         labs.append(lab)
-    return ins, labs  # , hist
+    return np.asarray(ins), np.asarray(labs)  # , hist
 
 
 def produce_training_set_with_disp(traindir, trainsize, numlabs=35):
@@ -224,3 +224,10 @@ def produce_testing_set(testdir, testsize=100, imH=128, imW=256):
         lab = np.asarray(Label.convert(mode="L"), dtype=np.float32)
         out.append([im, lab])
     return out
+
+
+#Dictionnary linking function names to the actual funcitons
+set_builders = {
+    'without_disp' : produce_training_set,
+    'with_disp' : produce_training_set_with_disp
+}

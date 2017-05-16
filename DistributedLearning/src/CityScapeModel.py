@@ -2,9 +2,11 @@ from __future__ import print_function, absolute_import, division
 
 import json
 import os
-
 import keras
-from helpers import models
+import numpy as np
+
+from helpers import models, preprocess
+from helpers.BatchGenerator import BatchGenerator
 
 
 class CityScapeModel:
@@ -50,15 +52,21 @@ class CityScapeModel:
                               'num_labs': None,
                               'met': None,
                               'w_mode': None,
-                              'trainset': []
+                              'trainset': [],
+                              'callbacks' : []
                               }
             # Saving default in a file
             with open(os.path.join(dir, 'properties.json'), 'w') as outfile:
                 json.dump(self.prop_dict, outfile)
         else:
             self.prop_dict = json.load(open(os.path.join(dir, 'properties.json')))
-            self.build_net()
             print("Model loaded from .json file")
+            if (os.path.isfile(os.path.join(dir,'saves','net_.h5'))):
+                print ( "Saving file found, restoring network...")
+                self.model = keras.models.load_model(os.path.join(dir,'saves','net_.h5'))
+            else:
+                print ("No save found, building model from function")
+                self.build_net()
 
             # ==============================================================================
 
@@ -74,13 +82,6 @@ class CityScapeModel:
             print("Defining building function")
             self.prop_dict['net_builder'] = building_function
 
-    def save_model(self):
-        """
-            Saves the current model properties into a json file
-        """
-        with (open(os.path.join(self.prop_dict['directory'], 'properties.json'), 'w')) as outfile:
-            json.dump(self.prop_dict, outfile)
-
     def build_net(self):
         """
             Builds the network using the defined function
@@ -88,7 +89,7 @@ class CityScapeModel:
         if (self.prop_dict['net_builder']):
             print(' Building network from function : ' + self.prop_dict['net_builder'])
             self.model = models.models_dict[self.prop_dict['net_builder']](self.prop_dict['input_shape'],
-                                                                           self.prop_dict['num_labs'])
+                                                                           self.prop_dict['num_labs']+1)
         else:
             print('Error : no building function defined')
 
@@ -112,7 +113,11 @@ class CityScapeModel:
         self.prop_dict['num_labs'] = numlabs
 
     def define_training_set(self, trainset, trainsetbuilder, trainsize):
-        self.prop_dict['trainset'] = [trainsetbuilder]
+        """
+            Sets the 'trainset' field of the properties dict to the specified arguments.
+        """
+        self.prop_dict['trainset'] = [trainsetbuilder, trainset, trainsize]
+
     # DEPRECATED
     """
         def add_network_from_builder(self, building_function,in_shape=None,out_shape = None):
@@ -153,7 +158,7 @@ class CityScapeModel:
             Save the network and its weights
         """
         if (not weights_only):
-            self.model.save(os.path.join(self.prop_dict['directory'], 'saves', 'net_'))
+            self.model.save(os.path.join(self.prop_dict['directory'], 'saves', 'net_.h5'))
         else:
             self.model.save_weights(os.path.join(self.prop_dict['directory'], 'saves', 'weights_'))
 
@@ -193,18 +198,30 @@ class CityScapeModel:
         """
         print('compiling')
         self.compile()
-        x_train, y_train = self.prop_dict['trainset'][0](traindir=self.prop_dict['trainset'][1],
-                                                        trainsize=self.prop_dict['trainset'][2],
-                                                        numlabs=self.prop_dict['num_labs']
-                                                        )
-        self.model.fit(x_train,
-                       y_train,
-                       epochs=epochs,
-                       verbose=2,
-                       callbacks=self.prop_dict['callbacks'],
-                       batch_size=batch_size
-                       )
+        batch_gen = BatchGenerator(traindir=self.prop_dict['trainset'][1],
+                                   city_model = self,
+                                   trainsetsize = self.prop_dict['trainset'][2],
+                                   batchsize = batch_size)
+        self.model.fit_generator(generator=batch_gen.generate_batch(option=self.prop_dict['trainset'][0]),
+                                 steps_per_epoch=batch_gen.batchsize,
+                                 epochs=epochs,
+                                 verbose=2,
+                                 callbacks=self.prop_dict['callbacks']
+                                 )
         if (save):
-            self.save_model()
+            print('Saving model')
+            self.save_tojson()
             self.save_net()
         print('done')
+
+    def compute_output(self, x):
+        """
+        Computes the output of the net on a single input x.
+        :param 
+            x: a 3D np array containing the input 
+        :return
+            y: a 3D np array containing the predictions of the net.
+        """
+        y = self.model.predict_on_batch(np.expand_dims(x, axis = 0))
+        y = np.argmax(y, axis = -1)
+        return  y
