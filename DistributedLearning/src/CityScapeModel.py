@@ -22,10 +22,13 @@ class CityScapeModel:
             - loss : a keras.losses function to use for training
             - met : a dictionnary of metrics, used in training, see keras doc
             - w_mode : sample weight mode, see documentation for keras training
-            - dataset : a list [set_builder, folder, trainsize] with
-                * set_builder : a function generating a tuple (x_train, y_train), two 4D nparrays such as the ones in the preprocess file.
+            - trainset : a list [set_builder, folder, trainsize] with
+                * set_builder : a batch generator.
                 * folder : the path to the folder containing all training images.
-                * trainsize : the number of image to put in the set.
+                * trainsize : the number of image to put in the training set.
+            - callbacks : a list of tuple (function, args) with:
+                * function : name of a callback function as defined in the helper file
+                * args : a dict of the arguments to pass to the function
         """
 
     # ==============================================================================
