@@ -210,7 +210,7 @@ def produce_training_set_with_disp(traindir, trainsize, numlabs=35):
         lab = np.eye(num_labels + 1)[lab]
         ins.append(np.concatenate((im, disp), axis=-1))
         labs.append(lab)
-    return (ins, labs)
+    return (np.asarray(ins), np.asarray(labs))
 
 
 def produce_testing_set(testdir, testsize=100, imH=128, imW=256):
