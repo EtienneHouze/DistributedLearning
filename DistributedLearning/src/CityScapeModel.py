@@ -44,13 +44,13 @@ class CityScapeModel:
             self.prop_dict = {'name': 'default',
                               'net_builder': None,
                               'directory': dir,
-                              'loss': keras.losses.MAE,
-                              'opt': keras.optimizers.Adam(),
+                              'loss': 'MAE',
+                              'opt': 'Adam',
                               'input_shape': None,
                               'num_labs': None,
                               'met': None,
                               'w_mode': None,
-                              'dataset': []
+                              'trainset': []
                               }
             # Saving default in a file
             with open(os.path.join(dir, 'properties.json'), 'w') as outfile:
@@ -88,7 +88,7 @@ class CityScapeModel:
         if (self.prop_dict['net_builder']):
             print(' Building network from function : ' + self.prop_dict['net_builder'])
             self.model = models.models_dict[self.prop_dict['net_builder']](self.prop_dict['input_shape'],
-                                                                           self.prop_dict['numlabs'])
+                                                                           self.prop_dict['num_labs'])
         else:
             print('Error : no building function defined')
 
@@ -109,8 +109,10 @@ class CityScapeModel:
             Sets the number of labels for the model.
             WARNING : since there is an unlabelled class, there is actually one more class than labels !
         """
-        self.prop_dict['numlabs'] = numlabs
+        self.prop_dict['num_labs'] = numlabs
 
+    def define_training_set(self, trainset, trainsetbuilder, trainsize):
+        self.prop_dict['trainset'] = [trainsetbuilder]
     # DEPRECATED
     """
         def add_network_from_builder(self, building_function,in_shape=None,out_shape = None):
@@ -191,8 +193,8 @@ class CityScapeModel:
         """
         print('compiling')
         self.compile()
-        x_train, y_train = self.prop_dict['dataset'][0](traindir=self.prop_dict['dataset'][1],
-                                                        trainsize=self.prop_dict['dataset'][2],
+        x_train, y_train = self.prop_dict['trainset'][0](traindir=self.prop_dict['trainset'][1],
+                                                        trainsize=self.prop_dict['trainset'][2],
                                                         numlabs=self.prop_dict['num_labs']
                                                         )
         self.model.fit(x_train,
