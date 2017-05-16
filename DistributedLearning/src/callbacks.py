@@ -1,5 +1,5 @@
 from keras.callbacks import Callback
-
+# TODO : Create callback functions to do stuff...
 
 class ViewOutput(Callback):
     def __init__(self, ):
