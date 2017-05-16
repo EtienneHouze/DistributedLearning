@@ -130,21 +130,25 @@ labels = [
 # Please refer to the main method below for example usages!
 
 
-#id to catId
-id2catId = {label.id : label.categoryId for label in labels}
-for i in range(34,256):
-    id2catId[i]=-1
+# id to catId
+id2catId = {label.id: label.categoryId for label in labels}
+for i in range(34, 256):
+    id2catId[i] = -1
+
 
 def convert2catId(labId):
     return id2catId[labId]
 
-#id to trainId
-id2trainId = {label.id : label.trainId for label in labels}
-for i in range(34,256):
+
+# id to trainId
+id2trainId = {label.id: label.trainId for label in labels}
+for i in range(34, 256):
     id2trainId[i] = -1
+
 
 def convert2trainId(labId):
     return id2trainId[labId]
+
 
 # name to label object
 name2label = {label.name: label for label in labels}
@@ -208,10 +212,12 @@ if __name__ == "__main__":
     print("    " + ('-' * 98))
     for label in labels:
         print(
-            "    {:>21} | {:>3} | {:>7} | {:>14} | {:>10} | {:>12} | {:>12}".format(label.name, label.id, label.trainId,
-                                                                                    label.category, label.categoryId,
-                                                                                    label.hasInstances,
-                                                                                    label.ignoreInEval))
+                "    {:>21} | {:>3} | {:>7} | {:>14} | {:>10} | {:>12} | {:>12}".format(label.name, label.id,
+                                                                                        label.trainId,
+                                                                                        label.category,
+                                                                                        label.categoryId,
+                                                                                        label.hasInstances,
+                                                                                        label.ignoreInEval))
     print("")
 
     print("Example usages:")

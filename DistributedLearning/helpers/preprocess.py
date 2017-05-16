@@ -1,18 +1,19 @@
-import numpy as np
-from PIL import Image
-from os.path import join, basename, isfile, normpath
-from os import listdir, walk
 import random
+from os import walk
+from os.path import join, basename, isfile, normpath
 
 import helpers.labels as labels
-
-#======================================================================================================
-    #Preprocess functions that can be used on images before feeding them into the net.
-    #Please refer to the description of every function
-#======================================================================================================
+import numpy as np
+from PIL import Image
 
 
-def produce_training_dir(imdir, labeldir, outdir, training_set_size, imW=640, imH=360, crop=True, alllabels = True):
+# ======================================================================================================
+# Preprocess functions that can be used on images before feeding them into the net.
+# Please refer to the description of every function
+# ======================================================================================================
+
+
+def produce_training_dir(imdir, labeldir, outdir, training_set_size, imW=640, imH=360, crop=True, alllabels=True):
     """
         Creates a folder containing cropped images.
         @ args :
@@ -65,14 +66,16 @@ def produce_training_dir(imdir, labeldir, outdir, training_set_size, imW=640, im
             else:
                 Im.thumbnail((imW, imH))
                 Label.thumbnail((imW, imW))
-            Label = Image.eval(Label,labels.convert2trainId)
+            Label = Image.eval(Label, labels.convert2trainId)
             Im.save(join(outdir, '_' + str(step) + '_im_.png'))
             Label.save(join(outdir, '_' + str(step) + '_lab_.png'))
         print(step)
         step += 1
     return
 
-def produce_training_dir_with_disp(imdir, labeldir, dispdir, outdir, training_set_size, imW=640, imH=360, crop=True, alllabels = True):
+
+def produce_training_dir_with_disp(imdir, labeldir, dispdir, outdir, training_set_size, imW=640, imH=360, crop=True,
+                                   alllabels=True):
     """
         Creates a folder containing cropped images.
         @ args :
@@ -97,7 +100,7 @@ def produce_training_dir_with_disp(imdir, labeldir, dispdir, outdir, training_se
             label_name = join(normpath(labeldir), city,
                               city + '_' + splt_name[1] + '_' + splt_name[2] + '_gtFine_labelIds.png')
             disp_name = join(dispdir, city,
-							 city + '_' + splt_name[1] + '_' + splt_name[2] + '_disparity.png')
+                             city + '_' + splt_name[1] + '_' + splt_name[2] + '_disparity.png')
             if (isfile(label_name) and isfile(disp_name)):
                 filelist.append([img_name, label_name, disp_name])
     out = []
@@ -117,7 +120,7 @@ def produce_training_dir_with_disp(imdir, labeldir, dispdir, outdir, training_se
             else:
                 Im.thumbnail((imW, imH))
                 Label.thumbnail((imW, imH))
-                Disp.thumbnail((imW,imH))
+                Disp.thumbnail((imW, imH))
             Im.save(join(outdir, '_' + str(step) + '_im_.png'))
             Label.save(join(outdir, '_' + str(step) + '_lab_.png'))
             Disp.save(join(outdir, '_' + str(step) + '_disp_.png'))
@@ -130,12 +133,12 @@ def produce_training_dir_with_disp(imdir, labeldir, dispdir, outdir, training_se
                 y = np.random.randint(1024 - imH)
                 Im = Im.crop((x, y, x + imW, y + imH))
                 Label = Label.crop((x, y, x + imW, y + imH))
-                Disp = Disp.crop((x, y, x+imW, y+imH))
+                Disp = Disp.crop((x, y, x + imW, y + imH))
             else:
                 Im.thumbnail((imW, imH))
                 Label.thumbnail((imW, imH))
-                Disp.thumbnail((imW,imH))
-            Label = Image.eval(Label,labels.convert2trainId)
+                Disp.thumbnail((imW, imH))
+            Label = Image.eval(Label, labels.convert2trainId)
             Im.save(join(outdir, '_' + str(step) + '_im_.png'))
             Label.save(join(outdir, '_' + str(step) + '_lab_.png'))
             Disp.save(join(outdir, '_' + str(step) + '_disp_.png'))
@@ -144,7 +147,7 @@ def produce_training_dir_with_disp(imdir, labeldir, dispdir, outdir, training_se
     return
 
 
-def produce_training_set(traindir, trainsize,numlabs=35):
+def produce_training_set(traindir, trainsize, numlabs=35):
     """
         Produces a list of training images and labels.
         @ args :
@@ -168,15 +171,16 @@ def produce_training_set(traindir, trainsize,numlabs=35):
         Label = Image.open(join(traindir, '_' + str(i) + '_lab_.png'))
         lab = np.asarray(Label.convert(mode="L"), dtype=np.int)
         maxlabs = num_labels * np.ones_like(lab)
-        lab = np.minimum(lab,maxlabs)
-        new_hist, _ = np.histogram(lab, bins=num_labels+1)
-        lab = np.eye(num_labels+1)[lab]
-        #hist += new_hist
+        lab = np.minimum(lab, maxlabs)
+        new_hist, _ = np.histogram(lab, bins=num_labels + 1)
+        lab = np.eye(num_labels + 1)[lab]
+        # hist += new_hist
         ins.append(im)
         labs.append(lab)
-    return ins,labs#, hist
+    return ins, labs  # , hist
 
-def produce_training_set_with_disp(traindir, trainsize, numlabs = 35):
+
+def produce_training_set_with_disp(traindir, trainsize, numlabs=35):
     """
         Produces a list of training images and labels.
         @ args :
@@ -199,26 +203,24 @@ def produce_training_set_with_disp(traindir, trainsize, numlabs = 35):
         lab = np.asarray(Label.convert(mode="L"), dtype=np.int)
         Disp = Image.open(normpath(join(traindir, '_' + str(i) + '_disp_.png')))
         disp = np.asarray(Disp.convert(mode='L'), dtype=np.float32)
-        disp = np.expand_dims(disp,axis = 2)
+        disp = np.expand_dims(disp, axis=2)
         maxlabs = num_labels * np.ones_like(lab)
-        lab = np.minimum(lab,maxlabs)
-        new_hist, _ = np.histogram(lab, bins=num_labels+1)
-        lab = np.eye(num_labels+1)[lab]
-        ins.append(np.concatenate((im,disp),axis=-1))
+        lab = np.minimum(lab, maxlabs)
+        new_hist, _ = np.histogram(lab, bins=num_labels + 1)
+        lab = np.eye(num_labels + 1)[lab]
+        ins.append(np.concatenate((im, disp), axis=-1))
         labs.append(lab)
-    return (ins,labs)
+    return (ins, labs)
 
-    
 
-def produce_testing_set(testdir, testsize = 100, imH = 128, imW = 256):
+def produce_testing_set(testdir, testsize=100, imH=128, imW=256):
     out = []
     for i in range(testsize):
         Im = Image.open(normpath(join(testdir, '_' + str(i) + '_im_.png')))
-        Im.thumbnail([imW,imH])
+        Im.thumbnail([imW, imH])
         im = np.asarray(Im, dtype=np.float32)
         Label = Image.open(join(testdir, '_' + str(i) + '_lab_.png'))
-        Label.thumbnail([imW,imH])
+        Label.thumbnail([imW, imH])
         lab = np.asarray(Label.convert(mode="L"), dtype=np.float32)
-        out.append([im,lab])
+        out.append([im, lab])
     return out
-
