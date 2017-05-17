@@ -1,4 +1,5 @@
 from keras.initializers import random_uniform, zeros
+from keras.activations import relu
 from keras.layers import Input, Conv2D
 from keras.layers.advanced_activations import PReLU
 from keras.models import Sequential, Model
@@ -246,11 +247,110 @@ def upscaled_truncated(input_shape, num_classes):
 
     return mod
 
+def upscaled_without_aggreg(input_shape, num_classes):
+
+    ins = Input(shape=input_shape,
+                name='net_inputs')
+    a = Conv2D(
+            filters=16,
+            kernel_size=(3,3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=True,
+            padding='same',
+            dilation_rate=1,
+            activation='relu',
+            name = 'net_conv0'
+            )(ins)
+    a = Conv2D(
+            filters=32,
+            kernel_size=(3,3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=True,
+            padding='same',
+            dilation_rate=1,
+            activation='relu',
+            name = 'net_conv1'
+            )(a)
+    a = Conv2D(
+            filters=64,
+            kernel_size=(3,3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=True,
+            padding='same',
+            dilation_rate=2,
+            activation='relu',
+            name = 'net_conv2'
+            )(a)
+    a = Conv2D(
+            filters=64,
+            kernel_size=(3,3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=True,
+            padding='same',
+            dilation_rate=2,
+            activation='relu',
+            name = 'net_conv3'
+            )(a)
+    a = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=True,
+            padding='same',
+            dilation_rate=4,
+            activation='relu',
+            name='net_conv4'
+    )(a)
+    a = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=True,
+            padding='same',
+            dilation_rate=4,
+            activation='relu',
+            name='net_conv5'
+    )(a)
+    a = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=True,
+            padding='same',
+            dilation_rate=8,
+            activation='relu',
+            name='net_conv6'
+    )(a)
+    a = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=True,
+            padding='same',
+            dilation_rate=8,
+            activation='relu',
+            name='net_conv7'
+    )(a)
+    mod = Model(
+            inputs = ins,
+            outputs = a,
+        )
+
+    return mod
+
 
 # A dictionnary linking model builder names to the actual functions.
 models_dict = {
     'simple_model': simple_model,
     'up': upscaled,
-    'up_mini': upscaled_truncated
-
+    'up_mini': upscaled_truncated,
+    'up_without': upscaled_without_aggreg
 }
