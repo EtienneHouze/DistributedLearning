@@ -27,7 +27,7 @@ class BatchGenerator:
         self.traindir = traindir
         self.batchsize = batchsize
         self.city_model = city_model
-        self.epoch_size = traindirsize // self.batchsize
+        self.epoch_size = trainsetsize // self.batchsize
 
     def generate_batch(self, option = ''):
         """

@@ -9,7 +9,7 @@ from helpers import models, preprocess
 from helpers.BatchGenerator import BatchGenerator
 from src import callbacks
 
-
+# TODO : si j'ai le temps, revoir les noms...
 class CityScapeModel:
     """
         A high-level, user friendly interface to create dense labelling model based on the Keras API.
@@ -33,6 +33,7 @@ class CityScapeModel:
         """
 
     # ==============================================================================
+
     def __init__(self, dir='./default_model'):
         """
             Initialisation method, creates an object reading its properties stored in the 'properties.json' file in the directory.
@@ -75,6 +76,10 @@ class CityScapeModel:
 
             # ==============================================================================
 
+    # ==============================================================================
+    # Setters
+    # ==============================================================================
+
     def define_network(self, building_function=None, in_shape=None, out_shape=None):
         """
             Define the neural network building function from the string passed as argument.
@@ -87,16 +92,12 @@ class CityScapeModel:
             print("Defining building function")
             self.prop_dict['net_builder'] = building_function
 
-    def build_net(self):
+    def define_loss(self,loss_name):
         """
-            Builds the network using the defined function
+        :param 
+            loss_name: name of the loss to use. Must be a valid keras loss. 
         """
-        if (self.prop_dict['net_builder']):
-            print(' Building network from function : ' + self.prop_dict['net_builder'])
-            self.model = models.models_dict[self.prop_dict['net_builder']](self.prop_dict['input_shape'],
-                                                                           self.prop_dict['num_labs']+1)
-        else:
-            print('Error : no building function defined')
+        self.prop_dict['loss'] = loss_name
 
     def define_name(self, name='default'):
         """
@@ -123,11 +124,28 @@ class CityScapeModel:
         """
         self.prop_dict['trainset'] = [trainsetbuilder, trainset, trainsize]
 
-    def add_callback(self,function_name,**kwargs):
+    def add_callback(self, function_name, **kwargs):
         """
         Adds a callback function
         """
-        self.prop_dict['callbacks'].append([function_name,kwargs])
+        self.prop_dict['callbacks'].append([function_name, kwargs])
+
+    # =============================================================================
+    # Other functions
+    # =============================================================================
+
+    def build_net(self):
+        """
+            Builds the network using the defined function
+        """
+        if (self.prop_dict['net_builder']):
+            print(' Building network from function : ' + self.prop_dict['net_builder'])
+            self.model = models.models_dict[self.prop_dict['net_builder']](self.prop_dict['input_shape'],
+                                                                           self.prop_dict['num_labs']+1)
+        else:
+            print('Error : no building function defined')
+
+
     # DEPRECATED
     """
         def add_network_from_builder(self, building_function,in_shape=None,out_shape = None):
@@ -206,21 +224,37 @@ class CityScapeModel:
                 - batch_size : an int, size of the batch to use.
                 - save : a bool, whether to save the model at the end of training or not.
         """
+
+        # First, we compile the model
         print('compiling')
         self.compile()
+        # We the build the callback functions, distinguishes cases between built-in callbacks and custom callbacks.
         print("Building Callback functions...")
         call_list = []
         for call_def in self.prop_dict['callbacks']:
-            call = callbacks.callbacks_dict[call_def[0]](self,
-                                                         options=call_def[1]
-                                                         )
+            if call_def[0] == 'tensorboard':
+                call = keras.callbacks.TensorBoard(log_dir=os.path.join(self.prop_dict['directory'],'logs',self.prop_dict['name']),
+                                                   histogram_freq=1,
+                                                   write_graph=True
+                                                   )
+            elif (call_def[0] == 'csv'):
+                call = keras.callbacks.CSVLogger(filename=os.path.join(self.prop_dict['directory'],'logs',self.prop_dict['name']+'.csv'),
+                                                 separator=',',
+                                                 append=True
+                                                 )
+            elif call_def[0] == 'ckpt':
+                call = keras.callbacks.ModelCheckpoint(filepath=os.path.join(self.prop_dict['directory'],'saves'))
+            else:
+                call = callbacks.callbacks_dict[call_def[0]](self,
+                                                             options=call_def[1]
+                                                             )
             call_list.append(call)
         batch_gen = BatchGenerator(traindir=self.prop_dict['trainset'][1],
                                    city_model = self,
                                    trainsetsize = self.prop_dict['trainset'][2],
                                    batchsize = batch_size)
         self.model.fit_generator(generator=batch_gen.generate_batch(option=self.prop_dict['trainset'][0]),
-                                 steps_per_epoch=batch_gen.batchsize,
+                                 steps_per_epoch=batch_gen.epoch_size,
                                  epochs=epochs,
                                  verbose=2,
                                  callbacks=call_list
