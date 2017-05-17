@@ -1,56 +1,67 @@
-# For a single-input model with 2 classes (binary classification):
-from keras.models import Model, load_model, Sequential
-from keras.layers import Dense, Activation, Dropout, Reshape, Flatten, Conv2D, MaxPooling2D
-from keras.callbacks import TensorBoard
-from keras.optimizers import SGD
-from keras.utils import plot_model
-import keras.backend as K
-import tensorflow as tf
+# Sandbox script
 
-import pydot_ng
 import numpy as np
-import h5py
-import keras
 from helpers import preprocess
-from helpers import models 
+from src.CityScapeModel import CityScapeModel
 
+# training data
+x_train, y_train = preprocess.produce_training_set_with_disp(traindir='D:/EtienneData/train_with_disp',
+                                                             trainsize=100,
+                                                             numlabs=18
+                                                             )
+# x_train = np.asarray(x_train)
+# y_train = np.asarray(y_train)
 
-# Generate dummy data
-x_train, y_train, _ = preprocess.produce_training_set(traindir = 'D:/EtienneData/trainmdeiummedlab',
-                                                   trainsize = 100,
-                                                   numlabs = 18
-                                                   )
-x_train = np.asarray(x_train)
-y_train = np.asarray(y_train)
-#y_train = K.one_hot(y_train,num_classes = 18)
-#y_labs = keras.utils.to_categorical(y_train)
-#print(y_labs.shape)
+test = CityScapeModel('test_t')
+test.add_callback('view_output',
+                  batch_interval=0,
+                  on_epoch=True)
+test.add_callback('tensorboard')
+test.add_callback('csv')
+test.add_callback(
+        'history_loss',
+        write_on_epoch=True
+        )
+test.add_callback('console_display')
+test.define_input((256, 512, 4))
+test.define_numlabs(18)
+test.define_network('up_mini')
+test.define_training_set('D:/EtienneData/train_with_disp','with_disp',100)
+test.define_loss('categorical_crossentropy')
+test.build_net()
+test.print_net()
+test.save_tojson()
+test.print_model()
+# test.save_tojson()
+test.train(epochs=30,
+           batch_size=5,
+           save=True
+           )
 
-model = models.models_dict['up_mini'](input_shape = (256,512,3),
-                                 num_classes = 19
-                                 )
-# input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
-# this applies 32 convolution filters of size 3x3 each.
-#model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(256, 512, 3)))
-#model.add(Conv2D(32, (3, 3), activation='relu'))
-#model.add(MaxPooling2D(pool_size=(2, 2)))
-#model.add(Dropout(0.25))
+# for x in x_train:
+#     y = test.compute_output(x)
+#     print ("hello world")
+# test.train([x_train,y_train],2,5,layer = 1)
+# test.define_input((256,512,19))
+# test.define_output((256,512,19))
+# test.add_network_from_builder('up_mini')
+# test.compile(index = None,opt=sgd,loss='categorical_crossentropy')
+# test.print_net()
+# test.save_net()
+# gen = BatchGenerator(x_train,y_train,test,batchsize = 5)
+# test.models[0].fit(x_train,y_train,epochs=10,batch_size=5,verbose=2)
+# y_pred = test.models[0].predict_on_batch(x_train[0:5,:,:,:])
+# test.models[1].fit_generator(gen.generate_batch(1),steps_per_epoch = 20, epochs = 1, verbose = 2)
+# test.save_model()
+# print('done')
 
-#model.add(Conv2D(64, (3, 3), activation='relu'))
-#model.add(Conv2D(64, (3, 3), activation='relu'))
-#model.add(MaxPooling2D(pool_size=(2, 2)))
-#model.add(Dropout(0.25))
-
-#model.add(Flatten())
-#model.add(Dense(256, activation='relu'))
-#model.add(Dropout(0.5))
-#model.add(Dense(10, activation='softmax'))
-
-sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-model.compile(loss='categorical_crossentropy', optimizer=sgd)
-tens = TensorBoard(log_dir = './test', histogram_freq = 1, write_graph = True, write_images = True)
-
-model.summary()
-model.fit(x_train, y_train, epochs=20, verbose=2 , batch_size=5, callbacks = [tens])
-#model.save(filepath = 'model.hdf5')
-plot_model(model, to_file='modeltest.png',show_shapes=True)
+# preprocess.produce_training_dir_with_disp(imdir = 'D:/EtienneData/Cityscapes/leftImg8bit_trainvaltest/leftImg8bit/train',
+#                                          labeldir = 'D:/EtienneData/Cityscapes/gtFine_trainvaltest/gtFine/train',
+#                                          dispdir = 'D:/EtienneData/Cityscapes/disparity_trainvaltest/disparity/train',
+#                                          outdir = 'D:/EtienneData/train_with_disp',
+#                                          imW = 512,
+#                                          imH = 256,
+#                                          crop = False,
+#                                          training_set_size = 2975,
+#                                          alllabels = False
+#                                          )

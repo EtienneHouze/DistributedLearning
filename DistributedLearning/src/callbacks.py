@@ -63,8 +63,8 @@ class ViewOutput(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         if (self.on_epoch):
-            y = self.citymodel.compute_output(self.x)
-            Output = Image.fromarray(y[0, :, :, 0])
+            y = self.citymodel.compute_output(np.squeeze(self.x,axis=0))
+            Output = Image.fromarray(np.squeeze(y[:, :, :], axis=0).astype(np.uint8))
             Output.save(join(self.citymodel.prop_dict['directory'], 'watch',
                              self.citymodel.prop_dict['name'] + '_output_epoch_' + str(self.epoch_counter) + '_.png'))
         self.epoch_counter += 1
@@ -112,7 +112,7 @@ class ConsoleDisplay(Callback):
         self.epoch_count = 1
 
     def on_batch_end(self, batch, logs=None):
-        print("Batch " + str(self.iteration//self.epoch_count) + " of epoch " + str(self.epoch_count))
+        print("Batch " + str(batch) + " of epoch " + str(self.epoch_count))
         print("loss : " + str(logs['loss']))
         print("============")
         self.iteration += 1

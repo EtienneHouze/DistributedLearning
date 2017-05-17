@@ -47,7 +47,7 @@ class CityScapeModel:
             os.mkdir(dir)
             os.mkdir(os.path.join(dir, "saves"))
             os.mkdir(os.path.join(dir, "logs"))
-            os.mkdir(os.path.join((dir, 'watch')))
+            os.mkdir(os.path.join(dir, 'watch'))
             # Initializing the dictionnary
             self.prop_dict = {'name': 'default',
                               'net_builder': None,
@@ -188,7 +188,7 @@ class CityScapeModel:
         if (not weights_only):
             self.model.save(os.path.join(self.prop_dict['directory'], 'saves', 'net_.h5'))
         else:
-            self.model.save_weights(os.path.join(self.prop_dict['directory'], 'saves', 'weights_'))
+            self.model.save_weights(os.path.join(self.prop_dict['directory'], 'saves', 'weights_.h5'))
 
     def freeze_layers_with_name(self, name):
         """
@@ -197,6 +197,7 @@ class CityScapeModel:
         for layer in self.model.layers:
             if (name in layer.name):
                 layer.trainable = False
+                print("Layer "+ layer + " is frozen for training.")
         self.compile()
 
     def unfreeze_all(self):
@@ -205,6 +206,7 @@ class CityScapeModel:
         """
         for layer in self.model.layers:
             layer.trainable = True
+        print("All layers unfrozen.")
         self.compile()
 
     def compile(self):
@@ -215,6 +217,9 @@ class CityScapeModel:
                            loss=self.prop_dict['loss'],
                            metrics=self.prop_dict['met'],
                            sample_weight_mode=self.prop_dict['w_mode'])
+
+    def load_weights(self, filepath):
+        self.model.load_weights(filepath,by_name=True)
 
     def train(self, epochs, batch_size, save=True):
         """
@@ -263,6 +268,7 @@ class CityScapeModel:
             print('Saving model')
             self.save_tojson()
             self.save_net()
+            self.save_net(weights_only=True)
         print('done')
 
     def compute_output(self, x):
