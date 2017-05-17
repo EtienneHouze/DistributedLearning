@@ -7,6 +7,7 @@ import numpy as np
 
 from helpers import models, preprocess
 from helpers.BatchGenerator import BatchGenerator
+from src import callbacks
 
 
 class CityScapeModel:
@@ -45,6 +46,7 @@ class CityScapeModel:
             os.mkdir(dir)
             os.mkdir(os.path.join(dir, "saves"))
             os.mkdir(os.path.join(dir, "logs"))
+            os.mkdir(os.path.join((dir, 'watch')))
             # Initializing the dictionnary
             self.prop_dict = {'name': 'default',
                               'net_builder': None,
@@ -121,6 +123,11 @@ class CityScapeModel:
         """
         self.prop_dict['trainset'] = [trainsetbuilder, trainset, trainsize]
 
+    def add_callback(self,function_name,**kwargs):
+        """
+        Adds a callback function
+        """
+        self.prop_dict['callbacks'].append([function_name,kwargs])
     # DEPRECATED
     """
         def add_network_from_builder(self, building_function,in_shape=None,out_shape = None):
@@ -201,6 +208,13 @@ class CityScapeModel:
         """
         print('compiling')
         self.compile()
+        print("Building Callback functions...")
+        call_list = []
+        for call_def in self.prop_dict['callbacks']:
+            call = callbacks.callbacks_dict[call_def[0]](self,
+                                                         options=call_def[1]
+                                                         )
+            call_list.append(call)
         batch_gen = BatchGenerator(traindir=self.prop_dict['trainset'][1],
                                    city_model = self,
                                    trainsetsize = self.prop_dict['trainset'][2],
@@ -209,7 +223,7 @@ class CityScapeModel:
                                  steps_per_epoch=batch_gen.batchsize,
                                  epochs=epochs,
                                  verbose=2,
-                                 callbacks=self.prop_dict['callbacks']
+                                 callbacks=call_list
                                  )
         if (save):
             print('Saving model')
