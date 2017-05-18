@@ -2,12 +2,13 @@ from __future__ import print_function, absolute_import, division
 
 import json
 import os
+
 import keras
 import numpy as np
-
-from helpers import models, preprocess
+from helpers import models
 from helpers.BatchGenerator import BatchGenerator
-from src import callbacks
+from src import callbacks, Metrics
+
 
 # TODO : si j'ai le temps, revoir les noms...
 class CityScapeModel:
@@ -27,6 +28,7 @@ class CityScapeModel:
                 * set_builder : a batch generator.
                 * folder : the path to the folder containing all training images.
                 * trainsize : the number of image to put in the training set.
+            - valset : like trainset, but for validation
             - callbacks : a list of tuple (function, args) with:
                 * function : name of a callback function as defined in the helper file
                 * args : a dict of the arguments to pass to the function
@@ -59,7 +61,8 @@ class CityScapeModel:
                               'met': None,
                               'w_mode': None,
                               'trainset': [],
-                              'callbacks' : []
+                              'valset': [],
+                              'callbacks': []
                               }
             # Saving default in a file
             with open(os.path.join(dir, 'properties.json'), 'w') as outfile:
@@ -67,14 +70,9 @@ class CityScapeModel:
         else:
             self.prop_dict = json.load(open(os.path.join(dir, 'properties.json')))
             print("Model loaded from .json file")
-            if (os.path.isfile(os.path.join(dir,'saves','net_.h5'))):
-                print ( "Saving file found, restoring network...")
-                self.model = keras.models.load_model(os.path.join(dir,'saves','net_.h5'))
-            else:
-                print ("No save found, building model from function")
-                self.build_net()
+            self.build_net()
 
-            # ==============================================================================
+    # ==============================================================================
 
     # ==============================================================================
     # Setters
@@ -92,7 +90,7 @@ class CityScapeModel:
             print("Defining building function")
             self.prop_dict['net_builder'] = building_function
 
-    def define_loss(self,loss_name):
+    def define_loss(self, loss_name):
         """
         :param 
             loss_name: name of the loss to use. Must be a valid keras loss. 
@@ -124,6 +122,12 @@ class CityScapeModel:
         """
         self.prop_dict['trainset'] = [trainsetbuilder, trainset, trainsize]
 
+    def define_validation_set(self, valset, valsetbuilder, valsize):
+        """
+            Sets the 'trainset' field of the properties dict to the specified arguments.
+        """
+        self.prop_dict['valset'] = [valsetbuilder, valset, valsize]
+
     def add_callback(self, function_name, **kwargs):
         """
         Adds a callback function
@@ -141,10 +145,9 @@ class CityScapeModel:
         if (self.prop_dict['net_builder']):
             print(' Building network from function : ' + self.prop_dict['net_builder'])
             self.model = models.models_dict[self.prop_dict['net_builder']](self.prop_dict['input_shape'],
-                                                                           self.prop_dict['num_labs']+1)
+                                                                           self.prop_dict['num_labs'] + 1)
         else:
             print('Error : no building function defined')
-
 
     # DEPRECATED
     """
@@ -197,7 +200,7 @@ class CityScapeModel:
         for layer in self.model.layers:
             if (name in layer.name):
                 layer.trainable = False
-                print("Layer "+ layer + " is frozen for training.")
+                print("Layer " + layer + " is frozen for training.")
         self.compile()
 
     def unfreeze_all(self):
@@ -215,11 +218,14 @@ class CityScapeModel:
         """
         self.model.compile(optimizer=self.prop_dict['opt'],
                            loss=self.prop_dict['loss'],
-                           metrics=self.prop_dict['met'],
+                           metrics=[Metrics.iou],
                            sample_weight_mode=self.prop_dict['w_mode'])
 
-    def load_weights(self, filepath):
-        self.model.load_weights(filepath,by_name=True)
+    def load_weights(self, filepath=None):
+        if not filepath:
+            self.model.load_weights(os.path.join(self.prop_dict['directory'],'saves','weights_.h5'))
+        else:
+            self.model.load_weights(filepath, by_name=True)
 
     def train(self, epochs, batch_size, save=True):
         """
@@ -238,32 +244,49 @@ class CityScapeModel:
         call_list = []
         for call_def in self.prop_dict['callbacks']:
             if call_def[0] == 'tensorboard':
-                call = keras.callbacks.TensorBoard(log_dir=os.path.join(self.prop_dict['directory'],'logs',self.prop_dict['name']),
-                                                   histogram_freq=1,
-                                                   write_graph=True
-                                                   )
-            elif (call_def[0] == 'csv'):
-                call = keras.callbacks.CSVLogger(filename=os.path.join(self.prop_dict['directory'],'logs',self.prop_dict['name']+'.csv'),
-                                                 separator=',',
-                                                 append=True
-                                                 )
+                call = keras.callbacks.TensorBoard(
+                        log_dir=os.path.join(self.prop_dict['directory'], 'logs', self.prop_dict['name']),
+                        histogram_freq=1,
+                        write_graph=True
+                )
+            elif call_def[0] == 'csv':
+                call = keras.callbacks.CSVLogger(
+                        filename=os.path.join(self.prop_dict['directory'], 'logs', self.prop_dict['name'] + '.csv'),
+                        separator=',',
+                        append=True
+                )
             elif call_def[0] == 'ckpt':
-                call = keras.callbacks.ModelCheckpoint(filepath=os.path.join(self.prop_dict['directory'],'saves'))
+                call = keras.callbacks.ModelCheckpoint(
+                        filepath=os.path.join(self.prop_dict['directory'], 'saves', self.prop_dict['name']),
+                        verbose=2,
+                        save_weights_only=True
+                )
             else:
                 call = callbacks.callbacks_dict[call_def[0]](self,
                                                              options=call_def[1]
                                                              )
             call_list.append(call)
         batch_gen = BatchGenerator(traindir=self.prop_dict['trainset'][1],
-                                   city_model = self,
-                                   trainsetsize = self.prop_dict['trainset'][2],
-                                   batchsize = batch_size)
+                                   city_model=self,
+                                   trainsetsize=self.prop_dict['trainset'][2],
+                                   batchsize=batch_size)
+        val_gen = None
+        if len(self.prop_dict['valset']) > 0:
+            val_gen = BatchGenerator(traindir=self.prop_dict['valset'][1],
+                                     city_model=self,
+                                     trainsetsize=self.prop_dict['valset'][2],
+                                     batchsize=batch_size,
+                                     traindirsize=100)
+
         self.model.fit_generator(generator=batch_gen.generate_batch(option=self.prop_dict['trainset'][0]),
                                  steps_per_epoch=batch_gen.epoch_size,
                                  epochs=epochs,
                                  verbose=2,
-                                 callbacks=call_list
+                                 callbacks=call_list,
+                                 validation_data=val_gen.generate_batch(option=self.prop_dict['valset'][0]),
+                                 validation_steps=1
                                  )
+
         if (save):
             print('Saving model')
             self.save_tojson()
@@ -279,6 +302,6 @@ class CityScapeModel:
         :return
             y: a 3D np array containing the predictions of the net.
         """
-        y = self.model.predict_on_batch(np.expand_dims(x, axis = 0))
-        y = np.argmax(y, axis = -1)
-        return  y
+        y = self.model.predict_on_batch(np.expand_dims(x, axis=0))
+        y = np.argmax(y, axis=-1)
+        return y

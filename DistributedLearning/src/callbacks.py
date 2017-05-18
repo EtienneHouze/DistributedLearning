@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from helpers.BatchGenerator import BatchGenerator
 from keras.callbacks import Callback
+import keras.backend as K
 
 
 # TODO : Create callback functions to do stuff...
@@ -40,33 +41,43 @@ class ViewOutput(Callback):
             self.on_epoch = options['on_epoch']
 
     def on_train_begin(self, logs={}):
-        self.gen = BatchGenerator(traindir=self.citymodel.prop_dict['trainset'][1],
-                                  city_model=self.citymodel,
-                                  trainsetsize=self.citymodel.prop_dict['trainset'][2],
-                                  batchsize=self.num_ins)
-        self.x, _ = next(self.gen.generate_batch(option=self.citymodel.prop_dict['trainset'][0]))
-        bob = np.squeeze(self.x, axis=0)
-        bob = bob[:, :, 0:3].astype(np.uint8)
-        Input = Image.fromarray(bob)
-        Input.save(
-                join(self.citymodel.prop_dict['directory'], 'watch', self.citymodel.prop_dict['name'] + '_input.png'))
+        if len(self.citymodel.prop_dict['valset'])>0:
+            self.gen = BatchGenerator(traindir=self.citymodel.prop_dict['valset'][1],
+                                      city_model=self.citymodel,
+                                      trainsetsize=self.citymodel.prop_dict['valset'][2],
+                                      batchsize=self.num_ins)
+            self.x, _ = next(self.gen.generate_batch(option=self.citymodel.prop_dict['valset'][0]))
+        else:
+            self.gen = BatchGenerator(traindir=self.citymodel.prop_dict['trainset'][1],
+                                      city_model=self.citymodel,
+                                      trainsetsize=self.citymodel.prop_dict['trainset'][2],
+                                      batchsize=self.num_ins)
+            self.x, _ = next(self.gen.generate_batch(option=self.citymodel.prop_dict['trainset'][0]))
+        for i in range(self.num_ins):
+            bob = self.x[i, :, :, :]
+            bob = bob[:, :, 0:3].astype(np.uint8)
+            Input = Image.fromarray(bob)
+            Input.save(join(self.citymodel.prop_dict['directory'], 'watch', self.citymodel.prop_dict['name'] + str(i) + '_input.png'))
 
     def on_batch_end(self, batch, logs={}):
         if self.batch_interval != 0:
             self.i = self.i + 1
-            if (self.i % self.batch_interval == 0):
-                y = self.citymodel.compute_output(np.squeeze(self.x, axis=0))
-                Output = Image.fromarray(np.squeeze(y[:, :, :], axis=0).astype(np.uint8))
-                Output.save(join(self.citymodel.prop_dict['directory'], 'watch',
-                                 self.citymodel.prop_dict['name'] + '_output_' + str(self.epoch_counter) + '_' + str(
-                                     self.i) + '_.png'))
+            if self.i % self.batch_interval == 0:
+                y = self.citymodel.model.predict_on_batch(self.x)
+                y = np.argmax(y,axis=3)
+                for i in range(self.num_ins):
+                    Output = Image.fromarray(y[i, :, :].astype(np.uint8))
+                    Output.save(join(self.citymodel.prop_dict['directory'], 'watch',
+                                     self.citymodel.prop_dict['name'] + str(i) + '_output_' + str(self.epoch_counter) + '_' + str(self.i) + '_.png'))
 
     def on_epoch_end(self, epoch, logs={}):
         if (self.on_epoch):
-            y = self.citymodel.compute_output(np.squeeze(self.x,axis=0))
-            Output = Image.fromarray(np.squeeze(y[:, :, :], axis=0).astype(np.uint8))
-            Output.save(join(self.citymodel.prop_dict['directory'], 'watch',
-                             self.citymodel.prop_dict['name'] + '_output_epoch_' + str(self.epoch_counter) + '_.png'))
+            y = self.citymodel.model.predict_on_batch(self.x)
+            y = np.argmax(y, axis=3)
+            for i in range(self.num_ins):
+                Output = Image.fromarray(y[i, :, :].astype(np.uint8))
+                Output.save(join(self.citymodel.prop_dict['directory'], 'watch',
+                                 self.citymodel.prop_dict['name'] + str(i)+ '_output_epoch_' + str(self.epoch_counter) + '_.png'))
         self.epoch_counter += 1
 
 
