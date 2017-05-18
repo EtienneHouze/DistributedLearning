@@ -3,6 +3,7 @@
 import numpy as np
 from helpers import preprocess
 from src.CityScapeModel import CityScapeModel
+from src.Metrics import iou
 
 # training data
 x_train, y_train = preprocess.produce_training_set_with_disp(traindir='D:/EtienneData/train_with_disp',
@@ -12,26 +13,29 @@ x_train, y_train = preprocess.produce_training_set_with_disp(traindir='D:/Etienn
 # x_train = np.asarray(x_train)
 # y_train = np.asarray(y_train)
 
-test = CityScapeModel('test_t')
+test = CityScapeModel('test_3')
 test.add_callback('view_output',
                   batch_interval=0,
-                  on_epoch=True)
-test.add_callback('tensorboard')
-test.add_callback('csv')
-test.add_callback(
-        'history_loss',
-        write_on_epoch=True
-        )
-test.add_callback('console_display')
-test.define_input((256, 512, 4))
-test.define_numlabs(18)
-test.define_network('up_mini')
-test.define_training_set('D:/EtienneData/train_with_disp','with_disp',100)
+                  on_epoch=True,
+                  num_ins=5)
+# test.add_callback('tensorboard')
+# test.add_callback('csv')
+# test.add_callback(
+#         'history_loss',
+#         write_on_epoch=True
+#         )
+# test.add_callback('console_display')
+# test.define_input((256, 512, 4))
+# test.define_numlabs(18)
+# test.define_network('up_mini')
+test.define_training_set('D:/EtienneData/train_with_disp','with_disp',50)
+test.define_validation_set('D:/EtienneData/train_with_disp','with_disp',50)
 test.define_loss('categorical_crossentropy')
 test.build_net()
 test.print_net()
 test.save_tojson()
 test.print_model()
+test.load_weights()
 # test.save_tojson()
 test.train(epochs=30,
            batch_size=5,
