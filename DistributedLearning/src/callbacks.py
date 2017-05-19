@@ -131,8 +131,27 @@ class ConsoleDisplay(Callback):
     def on_epoch_end(self, epoch, logs=None):
         self.epoch_count += 1
 
+
+class LearningRateDecay(Callback):
+    def __init__(self, citymodel, options):
+        super(LearningRateDecay,self).__init__()
+        self.citymodel = citymodel
+        self.rate = 1
+        self.interval = 1
+        if 'rate' in options.keys():
+            self.rate = options['rate']
+        if 'interval' in options.keys():
+            self.interval = options['interval']
+
+    def on_epoch_end(self, epoch, logs=None):
+        if epoch%self.interval == 0:
+            old_lr = float(K.get_value(self.citymodel.model.optimizer.lr))
+            new_lr = self.rate*old_lr
+            K.set_value(self.citymodel.model.optimizer.lr,new_lr)
+
 callbacks_dict = {
     'view_output': ViewOutput,
     'history_loss': LossHistory,
-    'console_display': ConsoleDisplay
+    'console_display': ConsoleDisplay,
+    'lr_decay': LearningRateDecay
 }
