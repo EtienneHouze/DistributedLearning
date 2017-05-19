@@ -14,9 +14,9 @@ class Inception(Layer):
         self.use_bias = False
         self.dilation_rate = (1,1)
         if 'use_bias' in kwargs.keys():
-            self.use_bias=kwargs['use_bias']
+            self.use_bias=kwargs.pop('use_bias')
         if 'dilation_rate' in kwargs.keys():
-            self.dilation_rate = kwargs['dilation_rate']
+            self.dilation_rate = kwargs.pop('dilation_rate')
         super(Inception,self).__init__(**kwargs)
 
     def build(self, input_shape):

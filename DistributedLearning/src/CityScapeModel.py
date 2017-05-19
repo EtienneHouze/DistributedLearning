@@ -6,7 +6,7 @@ import os
 import keras
 from keras.utils import plot_model
 import numpy as np
-from helpers import models
+from src import models
 from helpers.BatchGenerator import BatchGenerator
 from src import callbacks, Metrics
 
@@ -274,22 +274,27 @@ class CityScapeModel:
                                    city_model=self,
                                    trainsetsize=self.prop_dict['trainset'][2],
                                    batchsize=batch_size)
-        val_gen = None
         if len(self.prop_dict['valset']) > 0:
             val_gen = BatchGenerator(traindir=self.prop_dict['valset'][1],
                                      city_model=self,
                                      trainsetsize=self.prop_dict['valset'][2],
                                      batchsize=batch_size,
                                      traindirsize=100)
-
-        self.model.fit_generator(generator=batch_gen.generate_batch(option=self.prop_dict['trainset'][0]),
-                                 steps_per_epoch=batch_gen.epoch_size,
-                                 epochs=epochs,
-                                 verbose=2,
-                                 callbacks=call_list,
-                                 validation_data=val_gen.generate_batch(option=self.prop_dict['valset'][0]),
-                                 validation_steps=1
-                                 )
+            self.model.fit_generator(generator=batch_gen.generate_batch(option=self.prop_dict['trainset'][0]),
+                                     steps_per_epoch=batch_gen.epoch_size,
+                                     epochs=epochs,
+                                     verbose=2,
+                                     callbacks=call_list,
+                                     validation_data=val_gen.generate_batch(option=self.prop_dict['valset'][0]),
+                                     validation_steps=1
+                                     )
+        else:
+            self.model.fit_generator(generator=batch_gen.generate_batch(option=self.prop_dict['trainset'][0]),
+                                     steps_per_epoch=batch_gen.epoch_size,
+                                     epochs=epochs,
+                                     verbose=2,
+                                     callbacks=call_list
+                                     )
 
         if (save):
             print('Saving model')

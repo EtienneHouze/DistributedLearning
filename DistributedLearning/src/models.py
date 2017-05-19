@@ -815,7 +815,7 @@ def inception_with_deeper_aggreg(input_shape, num_classes):
     a = Inception(input_shape=current_shape,
                   output_depth=num_classes,
                   dilation_rate=(32, 32),
-                  name='net_incept_6'
+                  name='net_incept_7'
                   )(a)
     b = Conv2D(
             filters=num_classes,
