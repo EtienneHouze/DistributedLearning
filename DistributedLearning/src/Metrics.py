@@ -5,6 +5,12 @@ import tensorflow as tf
 
 
 def iou(y_true, y_pred):
+    """
+    Defines an Intersection over Union metrics
+    :param y_true: a tensor of ground truth labels (4D)
+    :param y_pred: a tensor of probabilites obtained after softmax. Must be of same shape as y_true
+    :return: a scalar
+    """
     numlabs = y_pred.get_shape()[-1].value
     y_pred = tf.argmax(input=y_pred,
                        axis=-1
@@ -25,7 +31,7 @@ def iou(y_true, y_pred):
     Neg = tf.reduce_sum(union,
                         axis=np.arange(start=0, stop=nd - 1, step=1)
                         )
-    return tf.reduce_mean(TP / (Neg-TP))
+    return tf.reduce_mean(TP / Neg)
 
 
 # Dictionary renferencing metrics

@@ -4,6 +4,7 @@ import json
 import os
 
 import keras
+from keras.utils import plot_model
 import numpy as np
 from helpers import models
 from helpers.BatchGenerator import BatchGenerator
@@ -170,6 +171,9 @@ class CityScapeModel:
             Prints the properties dictionnary in the console.
         """
         print(self.prop_dict)
+
+    def print_png(self):
+        plot_model(self.model, os.path.join(self.prop_dict['directory'],self.prop_dict['name']+'.png'),show_shapes=True)
 
     def print_net(self):
         """
