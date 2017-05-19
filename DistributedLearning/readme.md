@@ -19,13 +19,13 @@ This project requires keras, and is built on its tensorflow backend. Make sure t
 
 ### Architecture
 #### DistributedLearning.py
-    The main script of the project. Basically, it is just a sandbox script to test stuff and launch runs
+The main script of the project. Basically, it is just a sandbox script to test stuff and launch runs
 
 #### src
-    A folder containg source scripts describing layers, callback functions and models.
+A folder containg source scripts describing layers, callback functions and models.
 
 #### helpers
-    A folder containg scripts for preprocessing data, generating batches and the label-defining file, taken from CityScape dataset
+A folder containg scripts for preprocessing data, generating batches and the label-defining file, taken from CityScape dataset
 
 ## References
 
