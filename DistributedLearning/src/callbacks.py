@@ -45,7 +45,8 @@ class ViewOutput(Callback):
             self.gen = BatchGenerator(traindir=self.citymodel.prop_dict['valset'][1],
                                       city_model=self.citymodel,
                                       trainsetsize=self.citymodel.prop_dict['valset'][2],
-                                      batchsize=self.num_ins)
+                                      batchsize=self.num_ins,
+                                      traindirsize=self.citymodel.prop_dict['valset'][2])
             self.x, _ = next(self.gen.generate_batch(option=self.citymodel.prop_dict['valset'][0]))
         else:
             self.gen = BatchGenerator(traindir=self.citymodel.prop_dict['trainset'][1],

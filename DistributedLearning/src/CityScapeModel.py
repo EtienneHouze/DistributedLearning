@@ -204,7 +204,7 @@ class CityScapeModel:
         for layer in self.model.layers:
             if (name in layer.name):
                 layer.trainable = False
-                print("Layer " + layer + " is frozen for training.")
+                print("Layer " + layer.name + " is frozen for training.")
         self.compile()
 
     def unfreeze_all(self):

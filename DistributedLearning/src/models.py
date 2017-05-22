@@ -901,6 +901,185 @@ def inception_with_deeper_aggreg(input_shape, num_classes):
     )
     return mod
 
+def inception_with_aggreg(input_shape, num_classes):
+    inputs = Input(input_shape,
+                   name='net_ins')
+    a = Inception(input_shape=input_shape,
+                  output_depth=16,
+                  dilation_rate=(1, 1),
+                  name='net_incept_1'
+                  )(inputs)
+    current_shape = input_shape[:-1] + (16,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=32,
+                  dilation_rate=(2,2),
+                  name='net_incept_2'
+                  )(a)
+    current_shape=current_shape[:-1]+(32,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=64,
+                  dilation_rate=(4, 4),
+                  name='net_incept_3'
+                  )(a)
+    current_shape=current_shape[:-1]+(64,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=128,
+                  dilation_rate=(8,8),
+                  name='net_incept_4'
+                  )(a)
+    current_shape=current_shape[:-1]+(64,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=128,
+                  dilation_rate=(16,16),
+                  name='net_incept_5'
+                  )(a)
+    current_shape=current_shape[:-1]+(128,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=256,
+                  dilation_rate=(32, 32),
+                  name='net_incept_6'
+                  )(a)
+    current_shape=current_shape[:-1]+(256,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=num_classes,
+                  dilation_rate=(32, 32),
+                  name='net_incept_7'
+                  )(a)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_0'
+    )(a)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_1'
+    )(b)
+    b = Conv2D(
+            filters= num_classes,
+            kernel_size=3,
+            dilation_rate=2,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_2'
+    )(b)
+    b = Conv2D(
+            filters= num_classes,
+            kernel_size=3,
+            dilation_rate=4,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_3'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            dilation_rate=8,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_4'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            dilation_rate=16,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_5'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            dilation_rate=1,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_6'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=1,
+            dilation_rate=1,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='softmax',
+            padding='same',
+            name='aggreg_7'
+    )(b)
+    mod = Model(
+            inputs=inputs,
+            outputs=b
+    )
+    return mod
+
+def inception_pure(input_shape, num_classes):
+    inputs = Input(input_shape,
+                   name='net_ins')
+    a = Inception(input_shape=input_shape,
+                  output_depth=16,
+                  dilation_rate=(1, 1),
+                  name='net_incept_1'
+                  )(inputs)
+    current_shape = input_shape[:-1] + (16,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=32,
+                  dilation_rate=(2,2),
+                  name='net_incept_2'
+                  )(a)
+    current_shape=current_shape[:-1]+(32,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=64,
+                  dilation_rate=(4, 4),
+                  name='net_incept_3'
+                  )(a)
+    current_shape=current_shape[:-1]+(64,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=128,
+                  dilation_rate=(8,8),
+                  name='net_incept_4'
+                  )(a)
+    current_shape=current_shape[:-1]+(64,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=128,
+                  dilation_rate=(16,16),
+                  name='net_incept_5'
+                  )(a)
+    current_shape=current_shape[:-1]+(128,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=256,
+                  dilation_rate=(32, 32),
+                  name='net_incept_6'
+                  )(a)
+    current_shape=current_shape[:-1]+(256,)
+    a = Inception(input_shape=current_shape,
+                  output_depth=num_classes,
+                  dilation_rate=(32, 32),
+                  name='net_incept_7'
+                  )(a)
+
+    mod = Model(
+            inputs=inputs,
+            outputs=a
+    )
+    return mod
+
 # A dictionnary linking model builder names to the actual functions.
 models_dict = {
     'simple_model': simple_model,
@@ -910,5 +1089,7 @@ models_dict = {
     'up_with': upscaled_with_aggreg,
     'up_with_deeper_aggreg': upscaled_with_deeper_aggreg,
     'test_inception': test_inception,
-    'inception_with': inception_with_deeper_aggreg
+    'inception_with': inception_with_deeper_aggreg,
+    'inception_with_lighter': inception_with_aggreg,
+    'inception_pure': inception_pure
 }
