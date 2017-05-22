@@ -1,6 +1,7 @@
 import csv
 from os.path import join
 
+import time
 import numpy as np
 from PIL import Image
 from helpers.BatchGenerator import BatchGenerator
@@ -92,6 +93,8 @@ class LossHistory(Callback):
         self.citymodel = citymodel
         self.losses = None
         self.i = 0
+        self.timer = 0
+        self.begin_time = 0
         self.frequency = 1
         self.write = True
         if 'frequency' in options.keys():
@@ -99,13 +102,16 @@ class LossHistory(Callback):
         if 'write_on_epoch' in options.keys():
             self.write = options['write_on_epoch']
 
+    def on_batch_begin(self, batch, logs=None):
+        self.begin_time = time.time()
+
     def on_epoch_begin(self, epoch, logs=None):
         self.losses = []
 
     def on_batch_end(self, batch, logs=None):
         self.i += 1
         if self.i % self.frequency == 0:
-            self.losses.append([self.i, logs.get('loss')])
+            self.losses.append([self.i, logs.get('loss'), time.time()-self.begin_time()])
 
     def on_epoch_end(self, epoch, logs=None):
         if self.write:
