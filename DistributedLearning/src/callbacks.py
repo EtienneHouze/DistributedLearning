@@ -111,19 +111,33 @@ class LossHistory(Callback):
     def on_batch_end(self, batch, logs=None):
         self.i += 1
         if self.i % self.frequency == 0:
-            self.losses.append([self.i, logs.get('loss'), time.time()-self.begin_time()])
+            line = {}
+            line = logs
+            line['time'] = time.time()-self.begin_time
+            self.losses.append(line)
 
     def on_epoch_end(self, epoch, logs=None):
         if self.write:
             with open(join(self.citymodel.prop_dict['directory'], 'logs',
-                           self.citymodel.prop_dict['name'] + 'losses.csv'), 'a') as csvfile:
-                writer = csv.writer(csvfile)
-                for line in self.losses:
-                    writer.writerow(line)
+                           self.citymodel.prop_dict['name'] + '_losses.csv'), 'a') as csvfile:
+                writer = csv.DictWriter(csvfile, self.losses[0].keys())
+                if epoch==0:
+                    writer.writeheader()
+                writer.writerows(self.losses)
 
 
 class ConsoleDisplay(Callback):
+    """
+    A callback function to be very explicit in the console log.
+    """
     def __init__(self,citymodel,options):
+        """
+        :param citymodel: 
+        :type citymodel: 
+        :param options: optional arguments:
+            
+        :type options: a dictionary
+        """
         super(ConsoleDisplay,self).__init__()
         self.citymodel = citymodel
         self.iteration = 0
@@ -140,7 +154,18 @@ class ConsoleDisplay(Callback):
 
 
 class LearningRateDecay(Callback):
+    """
+    Creates a callback to decrease learning rate during learning process
+    """
     def __init__(self, citymodel, options):
+        """
+        :param citymodel: reference to the model 
+        :type citymodel: a CityScapeModel
+        :param options: different optionnal args
+            * 'rate': coefficient by which the learning rate is multiplied.
+            *  'interval' : interval, in epochs, of the decreasing.
+        :type options: dictionnary
+        """
         super(LearningRateDecay,self).__init__()
         self.citymodel = citymodel
         self.rate = 1
@@ -156,6 +181,7 @@ class LearningRateDecay(Callback):
             new_lr = self.rate*old_lr
             K.set_value(self.citymodel.model.optimizer.lr,new_lr)
 
+# A dictionnary linking functions to their names.
 callbacks_dict = {
     'view_output': ViewOutput,
     'history_loss': LossHistory,

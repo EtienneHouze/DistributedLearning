@@ -4,9 +4,10 @@ import csv
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from PIL import Image
 from os.path import join, basename, dirname, isfile
-
+import matplotlib
 
 def moving_average(x, size):
     """
@@ -72,8 +73,25 @@ def visualize_csvlog(filepath, **kwargs):
         plt.title(title)
         plt.show()
         print('done')
+
+def visualize_csv(filepath, unique_graph=True):
+    """
+    Plots the different metrics registered in a csv file, using pandas dataframe
+    
+    :param filepath: path to the csv file
+    :type filepath: a string
+    :param (optional) : 'unique_graph':
+    :param (optional):
+     
+    :return: 
+    :rtype: 
+    """
+    matplotlib.style.use('ggplot')
+    plt.figure()
+    data = pd.read_csv(filepath)
+    data.plot()
 # TODO : Faire marcher cette ****** de fonction de visualisation de labels...
-def lab2color(lab, axis):
+def lab2color(lab):
     """
     A simple helper function which computes a color, given a label
     :param lab: the input label
@@ -81,7 +99,7 @@ def lab2color(lab, axis):
     :return: color, the RGB color of this label
     :rtype: A 1D, 3-element np array
     """
-    if lab < 18:
+    if lab[0] < 18:
         return np.asarray((13,115,42), dtype=np.uint8)
     else:
         return np.zeros((3))
@@ -94,11 +112,20 @@ def convert_labelled_images(image_list=[]):
     :return: nothing, writes images in the same folder as the input images.
     :rtype: None
     """
+    i = 0
     for image in image_list:
         if (isfile(image)):
+            name_dir = dirname(image)
+            im_name = basename(image)
+            out_name = im_name + '_processed.png'
             Im = Image.open(image)
             im = np.asarray(Im, dtype=int)
             new_im = np.expand_dims(im, axis=2)
-            new_im = np.apply_over_axes(lab2color, new_im, axes=(0,1))
+            new_im = np.apply_along_axis(func1d=lab2color,
+                                         axis=2,
+                                         arr=new_im)
+            Out = Image.fromarray(new_im,mode='RGB')
+            Out.save(join(name_dir,out_name))
+            Out.show()
             print('test')
 #
