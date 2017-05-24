@@ -1,13 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
 import csv
+from os import walk
+from os.path import join, basename, dirname, isfile
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from PIL import Image
-from os.path import join, basename, dirname, isfile
-import matplotlib
+
 
 def moving_average(x, size):
     """
@@ -74,24 +76,51 @@ def visualize_csvlog(filepath, **kwargs):
         plt.show()
         print('done')
 
-def visualize_csv(filepath, unique_graph=True):
+
+def visualize_csv(filepath, unique_graph=True, scales={}, means={}):
     """
     Plots the different metrics registered in a csv file, using pandas dataframe
     
     :param filepath: path to the csv file
     :type filepath: a string
-    :param (optional) : 'unique_graph':
-    :param (optional):
+    :param  unique_graph: whether printinh a single graph or not
+    :type unique_graph: boolean
+    :param scales: for each metrics, attribute a type of scale (must be a valid pyplot scale)
+    :type scales: a dict of string,string
+    :param means: if specified, defines the size if the window to use for averaging.
+    :type means: a dict of string,integers
      
     :return: 
     :rtype: 
     """
     matplotlib.style.use('ggplot')
-    plt.figure()
     data = pd.read_csv(filepath)
-    data.plot()
-# TODO : Faire marcher cette ****** de fonction de visualisation de labels...
-def lab2color(lab):
+    for key in means.keys():
+        if key in data.keys():
+            data[key] = pd.rolling_mean(data[key], window=means.get(key))
+    if unique_graph and scales == {}:
+        data.plot()
+    else:
+        if scales != {}:
+            for key in scales.keys():
+                if key in data.keys():
+                    plt.figure()
+                    plt.ylabel(key)
+                    plt.xlabel('iterations')
+                    plt.title(key)
+                    plt.yscale(scales.get(key))
+                    data[key].plot()
+        else:
+            for key in data.keys():
+                plt.figure()
+                plt.ylabel(key)
+                plt.xlabel('iterations')
+                plt.title(key)
+                data[key].plot()
+    plt.show()
+
+
+def lab2color(lab, colors={}):
     """
     A simple helper function which computes a color, given a label
     :param lab: the input label
@@ -99,20 +128,25 @@ def lab2color(lab):
     :return: color, the RGB color of this label
     :rtype: A 1D, 3-element np array
     """
-    if lab[0] < 18:
-        return np.asarray((13,115,42), dtype=np.uint8)
+    if lab[0] in colors.keys():
+        return np.asarray(colors.get(lab[0]))
     else:
         return np.zeros((3))
 
-def convert_labelled_images(image_list=[]):
+
+def convert_labelled_images(image_list=[], num_labs=18):
     """
     Method to visualize easily labelled images by attributing
     :param image_list: paths to the images to process
+    :param num_labs: number of classes
+    :type num_labs: integer
     :type image_list: an iterable of strings
     :return: nothing, writes images in the same folder as the input images.
     :rtype: None
     """
-    i = 0
+    colors_dict = {}
+    for i in range(num_labs):
+        colors_dict[i] = np.random.randint(low=0, high=256, size=3)
     for image in image_list:
         if (isfile(image)):
             name_dir = dirname(image)
@@ -121,11 +155,31 @@ def convert_labelled_images(image_list=[]):
             Im = Image.open(image)
             im = np.asarray(Im, dtype=int)
             new_im = np.expand_dims(im, axis=2)
-            new_im = np.apply_along_axis(func1d=lab2color,
-                                         axis=2,
-                                         arr=new_im)
-            Out = Image.fromarray(new_im,mode='RGB')
-            Out.save(join(name_dir,out_name))
-            Out.show()
-            print('test')
+            new_im = np.tile(new_im, [1, 1, 3])
+            it = np.nditer(im, flags=['multi_index'])
+            while not it.finished:
+                print(str(it[0]) + str(it.multi_index))
+                new_im[it.multi_index] = lab2color(new_im[it.multi_index], colors_dict)
+                it.iternext()
+            Out = Image.fromarray(new_im.astype('uint8'))
+            Out.save(join(name_dir, out_name))
+            print('debug')
+
+
 #
+def convert_labelled_output(dir_name, num_labs=18):
+    """
+    Convert every image in 
+    :param dir_name: directory containing the labelled images
+    :type dir_name: string
+    :param num_labs: number of classes
+    :type num_labs: integer
+    :return: nothing
+    :rtype: None
+    """
+    imlist = []
+    for root, _, files in walk(dir_name):
+        for name in files:
+            if 'output' in name:
+                imlist.append(join(root, name))
+    convert_labelled_images(imlist, num_labs)
