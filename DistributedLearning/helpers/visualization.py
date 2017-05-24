@@ -93,7 +93,7 @@ def visualize_csv(filepath, unique_graph=True, scales={}, means={}):
     data = pd.read_csv(filepath)
     for key in means.keys():
         if key in data.keys():
-            data[key] = pd.rolling_mean(data[key], window=means.get(key))
+            data[key] = data[key].rolling(window=means.get(key),center=False).mean()
     if unique_graph and scales == {}:
         data.plot()
     else:
@@ -154,12 +154,10 @@ def convert_labelled_images(image_list=[], num_labs=18):
             new_im = np.tile(new_im, [1, 1, 3])
             it = np.nditer(im, flags=['multi_index'])
             while not it.finished:
-                print(str(it[0]) + str(it.multi_index))
                 new_im[it.multi_index] = lab2color(new_im[it.multi_index], colors_dict)
                 it.iternext()
             Out = Image.fromarray(new_im.astype('uint8'))
             Out.save(join(name_dir, out_name))
-            print('debug')
 
 
 #

@@ -6,6 +6,7 @@ import os
 import keras
 from keras.utils import plot_model
 import numpy as np
+import csv
 from src import models
 from helpers.BatchGenerator import BatchGenerator
 from src import callbacks, Metrics
@@ -56,6 +57,7 @@ class CityScapeModel:
                               'net_builder': None,
                               'directory': dir,
                               'loss': 'MAE',
+                              'metrics': ['acc','iou'],
                               'opt': 'Adam',
                               'input_shape': None,
                               'num_labs': None,
@@ -128,6 +130,17 @@ class CityScapeModel:
             Sets the 'trainset' field of the properties dict to the specified arguments.
         """
         self.prop_dict['valset'] = [valsetbuilder, valset, valsize]
+
+    def define_metrics(self, *args):
+        """
+        
+        Args:
+            *args (string): names of the metrics to use. Can be either defined in basic keras or in the src.Metrics file
+
+        Returns:
+
+        """
+        self.prop_dict['metrics'] = args
 
     def add_callback(self, function_name, **kwargs):
         """
@@ -220,9 +233,15 @@ class CityScapeModel:
         """
             Compiles the embedded Keras model using the optimizer, loss, metrics and weight options defined in the properties dictionnary of the object.
         """
+        metrics = []
+        for met in self.prop_dict['metrics']:
+            if met in Metrics.met_dict.keys():
+                metrics.append(Metrics.met_dict.get(met))
+            else:
+                metrics.append(met)
         self.model.compile(optimizer=self.prop_dict['opt'],
                            loss=self.prop_dict['loss'],
-                           metrics=[Metrics.iou],
+                           metrics=metrics,
                            sample_weight_mode=self.prop_dict['w_mode'])
 
     def load_weights(self, filepath=None):
@@ -314,3 +333,34 @@ class CityScapeModel:
         y = self.model.predict_on_batch(np.expand_dims(x, axis=0))
         y = np.argmax(y, axis=-1)
         return y
+
+    def evaluate(self, valdirsize=None, outputfile=None):
+        if not valdirsize:
+            valdirsize = self.prop_dict['valset'][2]
+        val_gen = BatchGenerator(traindir=self.prop_dict['valset'][1],
+                                 city_model=self,
+                                 trainsetsize=valdirsize,
+                                 batchsize=1,
+                                 traindirsize=valdirsize)
+        counter = 0
+        gen = val_gen.generate_batch(option=self.prop_dict['valset'][0])
+
+        self.compile()
+        out_dict_list = []
+        for (x_val, y_val) in gen:
+            if counter < valdirsize:
+                line = {}
+                values = self.model.test_on_batch(x_val, y_val)
+                line['loss'] = values[0]
+                for i in range(1,len(values)):
+                    line[self.prop_dict['metrics'][i-1]] = values[i]
+                print(line)
+                out_dict_list.append(line)
+                counter += 1
+            else:
+                break
+        if outputfile:
+            with open(outputfile, mode='w') as out:
+                writer = csv.DictWriter(out, out_dict_list[0].keys())
+                writer.writeheader()
+                writer.writerows(out_dict_list)

@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function, division
 import numpy as np
 import tensorflow as tf
 
-
+# TODO : il y a visiblement un pb avec cette ****** de fonction
 def iou(y_true, y_pred):
     """
     Defines an Intersection over Union metrics
