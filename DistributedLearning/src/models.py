@@ -935,11 +935,11 @@ def inception_with_aggreg(input_shape, num_classes):
                   )(a)
     current_shape=current_shape[:-1]+(128,)
     a = Inception(input_shape=current_shape,
-                  output_depth=256,
+                  output_depth=128,
                   dilation_rate=(32, 32),
                   name='net_incept_6'
                   )(a)
-    current_shape=current_shape[:-1]+(256,)
+    current_shape=current_shape[:-1]+(128,)
     a = Inception(input_shape=current_shape,
                   output_depth=num_classes,
                   dilation_rate=(32, 32),

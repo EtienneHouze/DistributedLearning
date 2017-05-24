@@ -15,11 +15,11 @@ def moving_average(x, size):
     """
     helper function to compute the moving average
     :param x: input array
-    :type x: 1D array-like
+    :type x: np.ndarray
     :param size: size of the moving averaging window
-    :type size: integet
+    :type size: integer
     :return: averaged array
-    :rtype: 1D array-like, same size as the input
+    :rtype: np.ndarray
     """
     window = np.ones(int(max(1, size))) / float(max(1, size))
     return np.convolve(x, window, 'same')
@@ -79,19 +79,15 @@ def visualize_csvlog(filepath, **kwargs):
 
 def visualize_csv(filepath, unique_graph=True, scales={}, means={}):
     """
-    Plots the different metrics registered in a csv file, using pandas dataframe
     
-    :param filepath: path to the csv file
-    :type filepath: a string
-    :param  unique_graph: whether printinh a single graph or not
-    :type unique_graph: boolean
-    :param scales: for each metrics, attribute a type of scale (must be a valid pyplot scale)
-    :type scales: a dict of string,string
-    :param means: if specified, defines the size if the window to use for averaging.
-    :type means: a dict of string,integers
-     
-    :return: 
-    :rtype: 
+    Args:
+        filepath (string): path to the csv file 
+        unique_graph (bool): whether to print a single graph or not 
+        scales (dict): specifies whether to use particular scales for metrics 
+        means (dict): specifies the size of the window for averaging
+
+    Returns:
+        Nothing
     """
     matplotlib.style.use('ggplot')
     data = pd.read_csv(filepath)
