@@ -61,7 +61,6 @@ class CityScapeModel:
                               'opt': 'Adam',
                               'input_shape': None,
                               'num_labs': None,
-                              'met': None,
                               'w_mode': None,
                               'trainset': [],
                               'valset': [],
