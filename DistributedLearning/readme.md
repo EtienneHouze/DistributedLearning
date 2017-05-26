@@ -13,18 +13,23 @@ It is meant to study and implement neural network based image dense labelling wi
 
 The dataset used in this project is CityScape dataset, see the references at the end of this file.
 
-## Repo organization
+## Repository organization
 ### Requirements :
-This project requires keras, and is built on its tensorflow backend. Make sure to have those packages installed, as well as an up-to-date numpy, matplotlib, pillow and pydot packages.
+This project requires keras, and is built on its tensorflow backend. Make sure to have those packages installed, as well as an up-to-date numpy, matplotlib, pillow, pandas and pydot packages.
 
 ### Architecture
 #### DistributedLearning.py
 The main script of the project. Basically, it is just a sandbox script to test stuff and launch runs
 
-#### src
+#### ./src
 A folder containg source scripts describing layers, callback functions and models.
+ - *callbacks.py* : Defines the different callbacks functions that can be called upon training.
+ - *CityScapeModel.py* : Defines a class for conveniently create, train and evaluate a neural network fit to dense labelling images.
+ - *Layers.py* : Defines custom Keras layers.
+ - *Metrics.py* : Defines custom Keras metrics
+ - *models.py* : Defines the different functions that build the Keras models of the networks.
 
-#### helpers
+#### ./helpers
 A folder containg scripts for preprocessing data, generating batches and the label-defining file, taken from CityScape dataset
 
 ## References

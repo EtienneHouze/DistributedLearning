@@ -34,7 +34,7 @@ def iou(y_true, y_pred):
                                    axis=np.arange(start=0, stop=nd - 1, step=1)
                                    ),
                      1)
-    
+
     return tf.reduce_mean(TP/Neg,axis=-1)
 
 
