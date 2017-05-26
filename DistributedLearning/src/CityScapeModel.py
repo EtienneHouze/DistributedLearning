@@ -1,15 +1,17 @@
 from __future__ import print_function, absolute_import, division
 
+import csv
 import json
 import os
 
 import keras
-from keras.utils import plot_model
 import numpy as np
-import csv
-from src import models
+from keras.models import load_model
+from keras.utils import plot_model
+
 from helpers.BatchGenerator import BatchGenerator
 from src import callbacks, Metrics
+from src import models
 
 
 # TODO : si j'ai le temps, revoir les noms...
@@ -38,10 +40,12 @@ class CityScapeModel:
 
     # ==============================================================================
 
-    def __init__(self, dir='./default_model'):
+    def __init__(self, dir='./default_model', load_all=False):
         """
-            Initialisation method, creates an object reading its properties stored in the 'properties.json' file in the directory.
-            If no directory exists, a new one is created.
+        
+        Args:
+            dir (string): path to the folder where the model is to be saved or loaded.
+            load_all (bool): whether to load the entire model from the saved file.
         """
 
         self.model = None
@@ -57,7 +61,7 @@ class CityScapeModel:
                               'net_builder': None,
                               'directory': dir,
                               'loss': 'MAE',
-                              'metrics': ['acc','iou'],
+                              'metrics': ['acc', 'iou'],
                               'opt': 'Adam',
                               'input_shape': None,
                               'num_labs': None,
@@ -71,8 +75,10 @@ class CityScapeModel:
                 json.dump(self.prop_dict, outfile)
         else:
             self.prop_dict = json.load(open(os.path.join(dir, 'properties.json')))
-            print("Model loaded from .json file")
-            self.build_net()
+            if load_all:
+                self.model = load_model(os.path.join(dir, 'saves', 'net_.h5'))
+            else:
+                self.build_net()
 
     # ==============================================================================
 
@@ -185,7 +191,8 @@ class CityScapeModel:
         print(self.prop_dict)
 
     def print_png(self):
-        plot_model(self.model, os.path.join(self.prop_dict['directory'],self.prop_dict['name']+'.png'),show_shapes=True)
+        plot_model(self.model, os.path.join(self.prop_dict['directory'], self.prop_dict['name'] + '.png'),
+                   show_shapes=True)
 
     def print_net(self):
         """
@@ -245,7 +252,7 @@ class CityScapeModel:
 
     def load_weights(self, filepath=None):
         if not filepath:
-            self.model.load_weights(os.path.join(self.prop_dict['directory'],'saves','weights_.h5'))
+            self.model.load_weights(os.path.join(self.prop_dict['directory'], 'saves', 'weights_.h5'))
         else:
             self.model.load_weights(filepath, by_name=True)
 
@@ -351,8 +358,8 @@ class CityScapeModel:
                 line = {}
                 values = self.model.test_on_batch(x_val, y_val)
                 line['loss'] = values[0]
-                for i in range(1,len(values)):
-                    line[self.prop_dict['metrics'][i-1]] = values[i]
+                for i in range(1, len(values)):
+                    line[self.prop_dict['metrics'][i - 1]] = values[i]
                 print(line)
                 out_dict_list.append(line)
                 counter += 1

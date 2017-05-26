@@ -225,6 +225,64 @@ def produce_testing_set(testdir, testsize=100, imH=128, imW=256):
         out.append([im, lab])
     return out
 
+def file_len(file):
+    """
+    Computes the number of lines in the file
+    Args:
+        file (string): path to the file
+
+    Returns:
+        int : number of line
+    """
+    i = 0
+    with open(file) as f:
+        for i, l in enumerate(f):
+            pass
+    return i+1
+
+def add_header(inputfile, outputfile):
+    """
+    Adds a header at the begining of the file
+    Args:
+        inputfile (string): path to the input file
+        outputfile (string): path to the output file
+
+    Returns:
+        None
+    """
+    i = file_len(inputfile)
+    infile = open(inputfile, 'r')
+    outfile = open(outputfile, 'w')
+    outfile.write("1\n")
+    outfile.write(str(i)+"\n")
+    header = ["0 0 0","1 0 0","0 1 0","0 0 1","1 0 0 0","0 1 0 0","0 0 1 0","0 0 0 1"]
+    for line in header:
+        outfile.write(line+"\n")
+    for line in infile:
+        outfile.write(line)
+    outfile.close()
+    infile.close()
+
+def append_labels(pointsfile, labelsfile, outfile):
+    """
+    Just appends the labels at the end of each line
+    Args:
+        pointsfile (string): path to the file containting points 
+        labelsfile (string): path to the file containing labels
+        outfile (string): path to the file to be written
+
+    Returns:
+        None
+    """
+    with open(outfile,"w") as o:
+        pf = open(pointsfile, "r")
+        lf = open(labelsfile, "r")
+        for point in pf:
+            lab = lf.readline()
+            o.write(point[:-1] + " " + lab)
+        lf.close()
+        pf.close()
+
 
 #Dictionnary linking function names to the actual funcitons
 set_builders = {
