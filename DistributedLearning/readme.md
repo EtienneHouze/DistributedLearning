@@ -30,7 +30,11 @@ A folder containg source scripts describing layers, callback functions and model
  - *models.py* : Defines the different functions that build the Keras models of the networks.
 
 #### ./helpers
-A folder containg scripts for preprocessing data, generating batches and the label-defining file, taken from CityScape dataset
+A folder containg scripts for preprocessing data, generating batches and the label-defining file, taken from CityScape dataset.
+ - *BatchGenerator.py* : Defines a generator to produce batches.
+ - *labels.py* : Taken from the CityScape source code, describes the different labels of the dataset.
+ - *preprocess.py* : Contains various functions to process images before feeding them into the net.
+ - *visualization.py* : Methods to visualize logs and labelled images produced by the model.
 
 ## References
 
