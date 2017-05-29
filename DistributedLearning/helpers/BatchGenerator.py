@@ -137,3 +137,58 @@ class BatchGenerator:
         else:
             print("Invalid option !")
 
+    def generate_input_only(self, option = ''):
+        if option == 'with_disp':
+            while self.i > -1:
+                i = self.i % self.epoch_size
+                ins_list = []
+                if (i == 0):
+                    np.random.shuffle(self.indices)
+                for k in self.indices[self.batchsize * i: (i * self.batchsize) + self.batchsize]:
+                    Im = Image.open(join(self.traindir, '_' + str(k) + '_im_.png'))
+                    Disp = Image.open(join(self.traindir, '_' + str(k) + '_disp_.png'))
+                    im = np.asarray(Im, dtype=np.float32)
+                    disp = np.asarray(Disp, dtype=np.float32)
+                    disp = np.expand_dims(disp, axis=2)
+                    lab = np.minimum(lab, maxlabs)
+                    ins_list.append(np.concatenate((im, disp), axis=-1))
+                self.i += 1
+                yield np.asarray(ins_list)
+        elif option == 'with_z':
+            while self.i > -1:
+                i = self.i % self.epoch_size
+                ins_list = []
+                if (i == 0):
+                    np.random.shuffle(self.indices)
+                height_array = np.arange(start=0,
+                                         stop=self.city_model.prop_dict['input_shape'][0])
+                height_array = np.expand_dims(height_array,
+                                              axis=1)
+                height_array = np.tile(height_array,
+                                       reps=(1, self.city_model.prop_dict['input_shape'][1]))
+                height_array = np.expand_dims(height_array,
+                                              axis=2)
+                for k in self.indices[self.batchsize * i: (i * self.batchsize) + self.batchsize]:
+                    Im = Image.open(join(self.traindir, '_' + str(k) + '_im_.png'))
+                    Disp = Image.open(join(self.traindir, '_' + str(k) + '_disp_.png'))
+                    im = np.asarray(Im, dtype=np.float32)
+                    disp = np.asarray(Disp, dtype=np.float32)
+                    disp = np.expand_dims(disp, axis=2)
+                    ins_list.append(np.concatenate((im, disp, height_array), axis=-1))
+                self.i += 1
+                yield np.asarray(ins_list)
+        elif option == 'without_disp' or option == '':
+            while self.i > -1:
+                i = self.i % self.epoch_size
+                ins_list = []
+                if (i == 0):
+                    np.random.shuffle(self.indices)
+                for k in self.indices[self.batchsize * i: (i * self.batchsize) + self.batchsize]:
+                    Im = Image.open(join(self.traindir, '_' + str(k) + '_im_.png'))
+                    im = np.asarray(Im, dtype=np.float32)
+                    ins_list.append(im)
+                self.i += 1
+                yield np.asarray(ins_list)
+        else:
+            print("Invalid option !")
+

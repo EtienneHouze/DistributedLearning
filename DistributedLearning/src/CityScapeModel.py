@@ -4,6 +4,7 @@ import csv
 import json
 import os
 
+from PIL import Image
 import keras
 import numpy as np
 from keras.models import load_model
@@ -339,6 +340,28 @@ class CityScapeModel:
         y = self.model.predict_on_batch(np.expand_dims(x, axis=0))
         y = np.argmax(y, axis=-1)
         return y
+
+    def compute_on_dir(self, dirpath, outdir):
+        if not os.path.isdir(outdir):
+            os.mkdir(outdir)
+        _, _, files = next(os.walk(dirpath))
+        dir_len = len(files)
+        gen = BatchGenerator(traindir=dirpath,
+                             city_model=self,
+                             trainsetsize=dir_len,
+                             batchsize=1,
+                             traindirsize=dir_len)
+        counter = 0
+        inputs = gen.generate_input_only(option=self.prop_dict['trainset'][0])
+        for x in inputs:
+            y = self.compute_output(x)
+            Im = Image.fromarray(x.astype(int))
+            Out = Image.fromarray(y.astype(int))
+            Im.save(os.path.join(outdir,'input_'+str(counter)+'_.png'))
+            Out.save((os.path.join(outdir,'output_'+str(counter)+'_.png')))
+            counter += 1
+            print(str(counter))
+
 
     def evaluate(self, valdirsize=None, outputfile=None):
         """
