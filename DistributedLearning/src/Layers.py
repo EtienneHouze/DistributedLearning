@@ -13,10 +13,13 @@ class Inception(Layer):
         self.output_depth = output_depth
         self.use_bias = False
         self.dilation_rate = (1,1)
+        self.use_softmax = False
         if 'use_bias' in kwargs.keys():
             self.use_bias=kwargs.pop('use_bias')
         if 'dilation_rate' in kwargs.keys():
             self.dilation_rate = kwargs.pop('dilation_rate')
+        if 'softmax' in kwargs.keys():
+            self.use_softmax = kwargs.pop('softmax')
         super(Inception,self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -78,7 +81,10 @@ class Inception(Layer):
                           dilation_rate=(1, 1)
                           )
         output = tower3+tower2+tower1
-        return K.relu(output)
+        if (self.use_softmax):
+            return K.softmax(output)
+        else:
+            return K.relu(output)
 
     def compute_output_shape(self, input_shape):
         return input_shape[:-1] + (self.output_depth,)
@@ -92,6 +98,7 @@ class InceptionConcat(Layer):
         self.output_depth = output_depth
         self.mid_depth = self.output_depth // 4
         self.use_bias = False
+        self.use_softmax = False
         self.dilation_rate = (1,1)
         if 'use_bias' in kwargs.keys():
             self.use_bias=kwargs.pop('use_bias')
@@ -99,6 +106,8 @@ class InceptionConcat(Layer):
             self.dilation_rate = kwargs.pop('dilation_rate')
         if 'mid_depth' in kwargs.keys():
             self.mid_depth = kwargs.pop('mid_depth')
+        if 'softmax' in kwargs.keys():
+            self.use_softmax = kwargs.pop('softmax')
         super(Inception,self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -172,7 +181,10 @@ class InceptionConcat(Layer):
                           padding='same',
                           dilation_rate=(1,1)
                           )
-        return K.relu(output)
+        if self.use_softmax:
+            return K.softmax(output)
+        else:
+            return K.relu(output)
 
     def compute_output_shape(self, input_shape):
         return input_shape[:-1] + (self.output_depth,)

@@ -943,7 +943,8 @@ def inception_with_aggreg(input_shape, num_classes):
     a = Inception(input_shape=current_shape,
                   output_depth=num_classes,
                   dilation_rate=(32, 32),
-                  name='net_incept_7'
+                  name='net_incept_7',
+                  softmax=True,
                   )(a)
     b = Conv2D(
             filters=num_classes,
@@ -1079,6 +1080,9 @@ def inception_pure(input_shape, num_classes):
             outputs=a
     )
     return mod
+
+def unpooling_4times(input_shape, num_classes):
+
 
 # A dictionnary linking model builder names to the actual functions.
 models_dict = {
