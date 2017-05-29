@@ -91,6 +91,9 @@ def visualize_csv(filepath, unique_graph=True, scales={}, means={}):
     """
     matplotlib.style.use('ggplot')
     data = pd.read_csv(filepath)
+    for key in data.keys():
+        data[key] = pd.to_numeric(data[key],errors='coerce')
+    data = data.dropna()
     for key in means.keys():
         if key in data.keys():
             data[key] = data[key].rolling(window=means.get(key),center=False).mean()
