@@ -101,21 +101,20 @@ class BatchGenerator:
                 if (i == 0):
                     np.random.shuffle(self.indices)
                 for k in self.indices[self.batchsize * i: (i * self.batchsize) + self.batchsize]:
-                    Im = Image.open(join(self.traindir, '_' + str(k) + '_im_.png'))
                     Label = Image.open(join(self.traindir, '_' + str(k) + '_lab_.png'))
-                    Label.thumbnail((256//4,512//4))
-                    Disp = Image.open(join(self.traindir, '_' + str(k) + '_disp_.png'))
-                    im = np.asarray(Im, dtype=np.float32)
                     lab = np.asarray(Label.convert(mode="L"), dtype=np.int)
-                    disp = np.asarray(Disp, dtype=np.float32)
-                    disp = np.expand_dims(disp, axis=2)
+                    Label.thumbnail((128, 64))
+                    im = np.asarray(Label.convert(mode='L'), dtype=np.int)
                     maxlabs = self.city_model.prop_dict['num_labs'] * np.ones_like(lab)
+                    mini_maxlabs = self.city_model.prop_dict['num_labs'] * np.ones_like(im)
                     lab = np.minimum(lab, maxlabs)
                     lab = np.eye(self.city_model.prop_dict['num_labs'] + 1)[lab]
-                    ins_list.append(np.concatenate((im, disp), axis=-1))
+                    im = np.minimum(im, mini_maxlabs)
+                    im = np.eye(self.city_model.prop_dict['num_labs'] + 1)[im]
+                    ins_list.append(im)
                     labs_list.append(lab)
                 self.i += 1
-                yield (np.asarray(labs_list), np.asarray(labs_list))
+                yield (np.asarray(ins_list), np.asarray(labs_list))
         elif option == 'without_disp' or option == '':
             while self.i > -1:
                 i = self.i % self.epoch_size

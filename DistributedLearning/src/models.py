@@ -902,6 +902,7 @@ def inception_with_deeper_aggreg(input_shape, num_classes):
     return mod
 
 def inception_with_aggreg(input_shape, num_classes):
+    input_shape=tuple(input_shape)
     inputs = Input(input_shape,
                    name='net_ins')
     a = Inception(input_shape=input_shape,

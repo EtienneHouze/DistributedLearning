@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function, division
 import numpy as np
 import tensorflow as tf
 import keras.backend as K
-from sklearn.metrics import jaccard_similarity_score
+# from sklearn.metrics import jaccard_similarity_score
 
 def iou(y_true, y_pred):
     """

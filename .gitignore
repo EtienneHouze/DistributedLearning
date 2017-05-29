@@ -280,3 +280,9 @@ DistributedLearning/test_2/
 =======
 DistributedLearning/test_3/
 >>>>>>> Stashed changes
+
+DistributedLearning/test_inception/
+
+DistributedLearning/test_inception_pure/
+
+DistributedLearning/test_inception_pure_with_aggreg/
