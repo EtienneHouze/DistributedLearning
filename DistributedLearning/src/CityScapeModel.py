@@ -341,6 +341,15 @@ class CityScapeModel:
         return y
 
     def evaluate(self, valdirsize=None, outputfile=None):
+        """
+        Evaluates the model over the validation set.
+        Args:
+            valdirsize (integer): size of the validation set. Default is the value defined in the prop_dict of the model.
+            outputfile (outputfile): path to a csv file that will be created to store the results.
+
+        Returns:
+            Nothing
+        """
         if not valdirsize:
             valdirsize = self.prop_dict['valset'][2]
         val_gen = BatchGenerator(traindir=self.prop_dict['valset'][1],
@@ -370,3 +379,10 @@ class CityScapeModel:
                 writer = csv.DictWriter(out, out_dict_list[0].keys())
                 writer.writeheader()
                 writer.writerows(out_dict_list)
+        means = out_dict_list[0]
+        for key in means:
+            for i in range(1, valdirsize):
+                means[key] += out_dict_list[i][key]
+            means[key] /= valdirsize
+        print("The results over the valuation set are :")
+        print(means)

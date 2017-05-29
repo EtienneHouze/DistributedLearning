@@ -2,7 +2,7 @@ from __future__ import absolute_import,print_function,division
 
 from keras.initializers import random_uniform, zeros
 from keras.activations import relu
-from keras.layers import Input, Conv2D
+from keras.layers import Input, Conv2D, Conv2DTranspose
 from keras.layers.advanced_activations import PReLU
 from keras.models import Sequential, Model
 
@@ -1082,6 +1082,36 @@ def inception_pure(input_shape, num_classes):
     return mod
 
 def unpooling_4times(input_shape, num_classes):
+    """
+    Just a dummy network to learn how to convolutionnaly upscale an input.
+    Args:
+        input_shape ():
+        num_classes ():
+
+    Returns:
+
+    """
+    input_shape = tuple(input_shape)
+    inputs = Input(input_shape,
+                   name = 'input_layer')
+    a = Conv2DTranspose(filters=num_classes,
+                        kernel_size=(3,3),
+                        strides=(2,2),
+                        padding='same',
+                        use_bias=False,
+                        name='Upscale_1'
+                        )(inputs)
+    a = Conv2DTranspose(filters=num_classes,
+                        kernel_size=(3,3),
+                        strides=(2,2),
+                        padding='same',
+                        use_bias=False,
+                        name='Upscale_2'
+                        )(a)
+    mod = Model(inputs=inputs,
+                outputs=a)
+
+    return mod
 
 
 # A dictionnary linking model builder names to the actual functions.
@@ -1095,5 +1125,6 @@ models_dict = {
     'test_inception': test_inception,
     'inception_with': inception_with_deeper_aggreg,
     'inception_with_lighter': inception_with_aggreg,
-    'inception_pure': inception_pure
+    'inception_pure': inception_pure,
+    'unpooling': unpooling_4times
 }

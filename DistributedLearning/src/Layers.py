@@ -108,7 +108,7 @@ class InceptionConcat(Layer):
             self.mid_depth = kwargs.pop('mid_depth')
         if 'softmax' in kwargs.keys():
             self.use_softmax = kwargs.pop('softmax')
-        super(Inception,self).__init__(**kwargs)
+        super(InceptionConcat,self).__init__(**kwargs)
 
     def build(self, input_shape):
         self.K1 = self.add_weight(
@@ -141,7 +141,7 @@ class InceptionConcat(Layer):
                 initializer='uniform',
                 name=self.name+'_K5'
         )
-        super(Inception,self).build(input_shape)
+        super(InceptionConcat,self).build(input_shape)
 
     def call(self, inputs, **kwargs):
         tower1 = K.conv2d(x=inputs,
