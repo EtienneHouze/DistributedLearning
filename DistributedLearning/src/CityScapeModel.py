@@ -69,7 +69,8 @@ class CityScapeModel:
                               'w_mode': None,
                               'trainset': [],
                               'valset': [],
-                              'callbacks': []
+                              'callbacks': [],
+                              'learning_rate': 0.001
                               }
             # Saving default in a file
             with open(os.path.join(dir, 'properties.json'), 'w') as outfile:
@@ -86,6 +87,8 @@ class CityScapeModel:
     # ==============================================================================
     # Setters
     # ==============================================================================
+    def define_learning_rate(self, lr):
+        self.prop_dict['learning_rate'] = lr
 
     def define_network(self, building_function=None, in_shape=None, out_shape=None):
         """
@@ -250,6 +253,8 @@ class CityScapeModel:
                            loss=self.prop_dict['loss'],
                            metrics=metrics,
                            sample_weight_mode=self.prop_dict['w_mode'])
+        if 'learning_rate' in self.prop_dict.keys():
+            self.model.optimizer.lr = self.prop_dict['learning_rate']
 
     def load_weights(self, filepath=None):
         if not filepath:
