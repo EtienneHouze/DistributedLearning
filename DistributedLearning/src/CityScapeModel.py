@@ -243,7 +243,7 @@ class CityScapeModel:
         metrics = []
         for met in self.prop_dict['metrics']:
             if met in Metrics.met_dict.keys():
-                metrics.append(Metrics.met_dict.get(met))
+                metrics.append(Metrics.create_metrics(met,self))
             else:
                 metrics.append(met)
         self.model.compile(optimizer=self.prop_dict['opt'],
@@ -260,10 +260,13 @@ class CityScapeModel:
     def train(self, epochs, batch_size, save=True):
         """
             Trains the neural network according to the values passed as arguments.
-            @ Args:
-                - epochs : an int, number of epochs to train on.
-                - batch_size : an int, size of the batch to use.
-                - save : a bool, whether to save the model at the end of training or not.
+            Args:
+                epochs (int): number of epochs to train on.
+                batch_size (int): size of the batch to use.
+                save (bool):  whether to save the model at the end of training or not.
+
+            Returns:
+
         """
 
         # First, we compile the model
@@ -332,9 +335,10 @@ class CityScapeModel:
     def compute_output(self, x):
         """
         Computes the output of the net on a single input x.
-        :param 
-            x: a 3D np array containing the input 
-        :return
+        Args:
+            x (np.array): a 3D np array containing the input
+
+        Returns:
             y: a 3D np array containing the predictions of the net.
         """
         y = self.model.predict_on_batch(np.expand_dims(x, axis=0))
@@ -342,10 +346,22 @@ class CityScapeModel:
         return y
 
     def compute_on_dir(self, dirpath, outdir):
+        """
+        Computes the output of all images in a directory with 'im' in their name.
+        Args:
+            dirpath (string): path to the data folder
+            outdir (string): path to the output folder. Created if not existing.
+
+        Returns:
+
+        """
         if not os.path.isdir(outdir):
             os.mkdir(outdir)
         _, _, files = next(os.walk(dirpath))
-        dir_len = len(files)
+        dir_len = 0
+        for file in files:
+            if 'im' in file:
+                dir_len += 1
         gen = BatchGenerator(traindir=dirpath,
                              city_model=self,
                              trainsetsize=dir_len,
@@ -354,9 +370,12 @@ class CityScapeModel:
         counter = 0
         inputs = gen.generate_input_only(option=self.prop_dict['trainset'][0])
         for x in inputs:
-            y = self.compute_output(x)
-            Im = Image.fromarray(x.astype(int))
-            Out = Image.fromarray(y.astype(int))
+            if counter > dir_len:
+                break
+            x = np.squeeze(x,axis=0)
+            y = np.squeeze(self.compute_output(x),axis=0)
+            Im = Image.fromarray(x[:,:,0:3].astype('uint8'))
+            Out = Image.fromarray(y.astype('uint8'))
             Im.save(os.path.join(outdir,'input_'+str(counter)+'_.png'))
             Out.save((os.path.join(outdir,'output_'+str(counter)+'_.png')))
             counter += 1

@@ -1,12 +1,13 @@
 from __future__ import absolute_import,print_function,division
 
 from keras.initializers import random_uniform, zeros
+from keras.layers.core import Activation
 from keras.activations import relu
 from keras.layers import Input, Conv2D, Conv2DTranspose
 from keras.layers.advanced_activations import PReLU
 from keras.models import Sequential, Model
 
-from src.Layers import Inception
+from src.Layers import Inception, InceptionPooling, InceptionConcat, UpscalingLayer
 
 """
     This script contains all the builder functions used to build the keras models for 
@@ -1114,6 +1115,84 @@ def unpooling_4times(input_shape, num_classes):
 
     return mod
 
+def inception_with_pooling(input_shape, num_classes):
+    input_shape = tuple(input_shape)
+    current_shape = input_shape
+    inputs = Input(shape=input_shape)
+
+    a = InceptionPooling(input_shape=current_shape,
+                         output_depth=32,
+                         mid_depth=8,
+                         name='Inception_pool_1'
+                         )(inputs)
+    current_shape = current_shape[:-3] + (current_shape[-3]//2,) + (current_shape[-2]//2,) + (32,)
+    a = InceptionPooling(input_shape=current_shape,
+                         output_depth=128,
+                         mid_depth=32,
+                         name='Inception_pool_2'
+                         )(a)
+    current_shape = current_shape[:-3] + (current_shape[-3]//2,) + (current_shape[-2]//2,) + + (128,)
+    a = InceptionConcat(input_shape=current_shape,
+                        output_depth=256,
+                        mid_depth=64,
+                        name='Inception_upscale_1',
+                        dilation_rate=2
+                        )(a)
+    current_shape = current_shape[:-1] + (256, )
+    a = InceptionConcat(input_shape=current_shape,
+                        output_depth=256,
+                        mid_depth=92,
+                        name='Inception_upscale_2',
+                        dilation_rate=4
+                        )(a)
+    a = InceptionConcat(input_shape=current_shape,
+                        output_depth=256,
+                        mid_depth=92,
+                        name='Inception_upscale_3',
+                        dilation_rate=8
+                        )(a)
+    a = Inception(input_shape=current_shape,
+                  output_depth=num_classes,
+                  softmax=True,
+                  name='Inception_softmax'
+                  )(a)
+    a = UpscalingLayer(name='Unpooling_0')(a)
+    a = UpscalingLayer(name='Unpooling_1')(a)
+    a = Activation('softmax')
+    mod = Model(inputs=inputs,
+                outputs=a
+                )
+
+    return mod
+
+def test_inception_with_pooling(input_shape, num_classes):
+    input_shape = tuple(input_shape)
+    current_shape = input_shape
+    inputs = Input(shape=input_shape)
+
+    a = InceptionPooling(input_shape=current_shape,
+                         output_depth=32,
+                         mid_depth=8,
+                         name='Inception_pool_1'
+                         )(inputs)
+    current_shape = current_shape[:-3] + (current_shape[-3]//2,) + (current_shape[-2]//2,) + (32,)
+    a = InceptionPooling(input_shape=current_shape,
+                         output_depth=num_classes,
+                         mid_depth=64,
+                         name='Inception_pool_2'
+                         )(a)
+    a = Activation('softmax')(a)
+    current_shape = current_shape[:-3] + (current_shape[-3]//2,) + (current_shape[-2]//2,) +  (128,)
+
+    a = UpscalingLayer(name='Unpooling_0')(a)
+    a = UpscalingLayer(name='Unpooling_1')(a)
+    a = Activation('softmax')(a)
+    mod = Model(inputs=inputs,
+                outputs=a
+                )
+
+    return mod
+
 
 # A dictionnary linking model builder names to the actual functions.
 models_dict = {
@@ -1127,5 +1206,6 @@ models_dict = {
     'inception_with': inception_with_deeper_aggreg,
     'inception_with_lighter': inception_with_aggreg,
     'inception_pure': inception_pure,
-    'unpooling': unpooling_4times
+    'unpooling': unpooling_4times,
+    'test_inception_pooling':test_inception_with_pooling
 }
