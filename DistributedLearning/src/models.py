@@ -1207,5 +1207,6 @@ models_dict = {
     'inception_with_lighter': inception_with_aggreg,
     'inception_pure': inception_pure,
     'unpooling': unpooling_4times,
-    'test_inception_pooling':test_inception_with_pooling
+    'test_inception_pooling':test_inception_with_pooling,
+    'inception_pooling': inception_with_pooling
 }
