@@ -69,13 +69,7 @@ class Inception(Layer):
                           padding='same',
                           dilation_rate=self.dilation_rate
                           )
-        tower3 = K.pool2d(x=inputs,
-                          pool_size=(3, 3),
-                          strides=(1, 1),
-                          padding='same',
-                          pool_mode='max'
-                          )
-        tower3 = K.conv2d(x=tower3,
+        tower3 = K.conv2d(x=inputs,
                           kernel=self.K4,
                           strides=(1,1),
                           padding='same',
