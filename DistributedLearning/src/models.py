@@ -6,8 +6,9 @@ from keras.activations import relu
 from keras.layers import Input, Conv2D, Conv2DTranspose
 from keras.layers.advanced_activations import PReLU
 from keras.models import Sequential, Model
+import tensorflow as tf
 
-from src.Layers import Inception, InceptionPooling, InceptionConcat, UpscalingLayer
+from src.Layers import Inception, InceptionPooling, InceptionConcat, UpscalingLayer, UpscalingBicubic
 
 """
     This script contains all the builder functions used to build the keras models for 
@@ -1059,21 +1060,24 @@ def inception_pure(input_shape, num_classes):
                   name='net_incept_4'
                   )(a)
     current_shape=current_shape[:-1]+(64,)
-    a = Inception(input_shape=current_shape,
-                  output_depth=128,
+    a = InceptionConcat(input_shape=current_shape,
+                  output_depth=192,
+                        mid_depth=64,
                   dilation_rate=(16,16),
                   name='net_incept_5'
                   )(a)
-    current_shape=current_shape[:-1]+(128,)
-    a = Inception(input_shape=current_shape,
-                  output_depth=128,
+    current_shape=current_shape[:-1]+(192,)
+    a = InceptionConcat(input_shape=current_shape,
+                  output_depth=256,
+                    mid_depth=96,
                   dilation_rate=(32, 32),
                   name='net_incept_6'
                   )(a)
-    current_shape=current_shape[:-1]+(128,)
+    current_shape=current_shape[:-1]+(256,)
     a = Inception(input_shape=current_shape,
                   output_depth=num_classes,
                   dilation_rate=(32, 32),
+                  softmax=True,
                   name='net_incept_7'
                   )(a)
 
@@ -1131,34 +1135,31 @@ def inception_with_pooling(input_shape, num_classes):
                          mid_depth=32,
                          name='Inception_pool_2'
                          )(a)
-    current_shape = current_shape[:-3] + (current_shape[-3]//2,) + (current_shape[-2]//2,) + + (128,)
+    current_shape = current_shape[:-3] + (current_shape[-3]//2,) + (current_shape[-2]//2,) + (128,)
     a = InceptionConcat(input_shape=current_shape,
                         output_depth=256,
                         mid_depth=64,
-                        name='Inception_upscale_1',
-                        dilation_rate=2
+                        name='Inception_upscale_1'
                         )(a)
     current_shape = current_shape[:-1] + (256, )
     a = InceptionConcat(input_shape=current_shape,
                         output_depth=256,
                         mid_depth=92,
-                        name='Inception_upscale_2',
-                        dilation_rate=4
+                        name='Inception_upscale_2'
                         )(a)
     a = InceptionConcat(input_shape=current_shape,
                         output_depth=256,
                         mid_depth=92,
-                        name='Inception_upscale_3',
-                        dilation_rate=8
+                        name='Inception_upscale_3'
                         )(a)
     a = Inception(input_shape=current_shape,
                   output_depth=num_classes,
-                  softmax=True,
-                  name='Inception_softmax'
+                  name='Inception_Last'
                   )(a)
-    a = UpscalingLayer(name='Unpooling_0')(a)
-    a = UpscalingLayer(name='Unpooling_1')(a)
-    a = Activation('softmax')
+    a = UpscalingBicubic(name='Upscale_1')(a)
+    a = UpscalingBicubic(name='Upscale_2')(a)
+    # a = UpscalingLayer(name='Unpooling_1')(a)
+    a = Activation('softmax')(a)
     mod = Model(inputs=inputs,
                 outputs=a
                 )
@@ -1184,9 +1185,8 @@ def test_inception_with_pooling(input_shape, num_classes):
     a = Activation('softmax')(a)
     current_shape = current_shape[:-3] + (current_shape[-3]//2,) + (current_shape[-2]//2,) +  (128,)
 
-    a = UpscalingLayer(name='Unpooling_0')(a)
-    a = UpscalingLayer(name='Unpooling_1')(a)
-    a = Activation('softmax')(a)
+    a = UpscalingBicubic(name='Unpooling_0')(a)
+    a = UpscalingBicubic(name='Unpooling_1')(a)
     mod = Model(inputs=inputs,
                 outputs=a
                 )

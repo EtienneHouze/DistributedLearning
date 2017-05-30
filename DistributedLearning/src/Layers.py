@@ -2,6 +2,7 @@ from __future__ import absolute_import, print_function, division
 
 import keras.backend as K
 from keras.layers import Layer, UpSampling2D
+import tensorflow as tf
 
 # TODO : voir implémentation du bias pour le layer...
 class Inception(Layer):
@@ -174,7 +175,7 @@ class InceptionConcat(Layer):
                           padding='same',
                           dilation_rate=(1, 1)
                           )
-        output = K.concatenate(tower1,tower2,tower3)
+        output = K.concatenate((tower1,tower2,tower3))
         output = K.conv2d(x=output,
                           kernel=self.K5,
                           strides=(1,1),
@@ -316,6 +317,24 @@ class UpscalingLayer(Layer):
         return a
 
     def compute_output_shape(self, input_shape):
-        return input_shape[:-3] + (input_shape[-3] * 2,) + (input_shape[-2] * 2,) + (input_shape[-1
-                                                                                     ],)
+        return input_shape[:-3] + (input_shape[-3] * 2,) + (input_shape[-2] * 2,) + (input_shape[-1 ],)
 
+class UpscalingBicubic(Layer):
+    def __init__(self, **kwargs):
+        self.x = 0
+        self.y = 0
+        super(UpscalingBicubic,self).__init__(**kwargs)
+        self.trainable = False
+
+    def build(self, input_shape):
+        self.x = input_shape[1]*2
+        self.y = input_shape[2]*2
+
+    def call(self, inputs, **kwargs):
+        return tf.image.resize_bilinear(images=inputs,
+                                       size=(self.x,self.y),
+                                       )
+
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[:-3] + (input_shape[-3] * 2,) + (input_shape[-2] * 2,) + (input_shape[-1],)
