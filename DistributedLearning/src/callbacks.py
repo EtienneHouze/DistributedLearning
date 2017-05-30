@@ -177,9 +177,9 @@ class LearningRateDecay(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         if epoch%self.interval == 0:
-            old_lr = float(K.get_value(self.citymodel.model.optimizer.lr))
+            old_lr = self.citymodel.model.optimizer.lr
             new_lr = self.rate*old_lr
-            K.set_value(self.citymodel.model.optimizer.lr,new_lr)
+            self.citymodel.model.optimizer.lr = new_lr
 
 # A dictionnary linking functions to their names.
 callbacks_dict = {
