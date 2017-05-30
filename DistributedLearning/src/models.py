@@ -1062,18 +1062,18 @@ def inception_pure(input_shape, num_classes):
     current_shape=current_shape[:-1]+(64,)
     a = InceptionConcat(input_shape=current_shape,
                   output_depth=192,
-                        mid_depth=64,
+                        mid_depth=96,
                   dilation_rate=(16,16),
                   name='net_incept_5'
                   )(a)
     current_shape=current_shape[:-1]+(192,)
     a = InceptionConcat(input_shape=current_shape,
-                  output_depth=256,
-                    mid_depth=96,
+                  output_depth=128,
+                    mid_depth=64,
                   dilation_rate=(32, 32),
                   name='net_incept_6'
                   )(a)
-    current_shape=current_shape[:-1]+(256,)
+    current_shape=current_shape[:-1]+(128,)
     a = Inception(input_shape=current_shape,
                   output_depth=num_classes,
                   dilation_rate=(32, 32),
