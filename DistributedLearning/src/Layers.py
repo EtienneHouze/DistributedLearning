@@ -1,7 +1,7 @@
 from __future__ import absolute_import, print_function, division
 
 import keras.backend as K
-from keras.layers import Layer, UpSampling2D
+from keras.layers import Layer, UpSampling2D, MaxPool2D
 import tensorflow as tf
 
 # TODO : voir implémentation du bias pour le layer...
@@ -163,12 +163,11 @@ class InceptionConcat(Layer):
                           padding='same',
                           dilation_rate=self.dilation_rate
                           )
-        tower3 = K.pool2d(x=inputs,
-                          pool_size=(3, 3),
-                          strides=(1, 1),
-                          padding='same',
-                          pool_mode='max'
-                          )
+        tower3 = MaxPool2D(
+                pool_size=(2*self.dilation_rate[0],2*self.dilation_rate[1]),
+                padding='same',
+                           strides=(1,1),
+                           )(inputs)
         tower3 = K.conv2d(x=tower3,
                           kernel=self.K4,
                           strides=(1,1),
