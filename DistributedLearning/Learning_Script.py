@@ -8,7 +8,7 @@ from src.CityScapeModel import CityScapeModel
 DATAFOLDER = 'C:/Users/Etienne.Houze/Documents/EtienneData'
 model_name = 'test_newscript'
 
-model = CityScapeModel(join(DATAFOLDER,model_name))
+model = CityScapeModel(join(DATAFOLDER,'models',model_name))
 
 
 # Callbacks ==================================================
@@ -26,8 +26,8 @@ model.add_callback('console_display')
 model.define_input((256, 512, 4))
 model.define_numlabs(18)
 model.define_network('inception_pooling')
-model.define_training_set('D:/EtienneData/train_with_disp','with_disp',300)
-model.define_validation_set('D:/EtienneData/train_with_disp','with_disp',50)
+model.define_training_set(join(DATAFOLDER,'trainmeddisp'),'with_disp',2975)
+model.define_validation_set(join(DATAFOLDER,'val_with_disp'),'with_disp',50)
 model.define_loss('categorical_crossentropy')
 model.define_learning_rate(0.001)
 model.build_net()
