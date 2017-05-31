@@ -16,6 +16,7 @@ from src.Layers import Inception, InceptionPooling, InceptionConcat, UpscalingLa
 """
 
 
+# <editor-fold desc="Définition des fonctions de construction de modèles">
 def simple_model(input_shape):
     """
     Dummy function, just to test. Builds a reallys simple model, very fast but useless.
@@ -1508,10 +1509,13 @@ def upscaled_with_skips_aggreg(input_shape, num_classes):
 
 
 def upscaled_with_skips_and_meta(input_shape, num_classes):
+    # <editor-fold desc="Gestion des inputs">
     ins = Input(shape=input_shape,
                 name='net_inputs')
     ins_rgb = Lambda(lambda x: x[:,:,:,0:3], name='rgb_select')(ins)
     ins_meta = Lambda(lambda x: x[:,:,:,3:-1], name='meta_select')(ins)
+    # </editor-fold>
+    # <editor-fold desc="Traitement dde la couche rgb">
     a = Conv2D(
             filters=16,
             kernel_size=(3, 3),
@@ -1611,6 +1615,39 @@ def upscaled_with_skips_and_meta(input_shape, num_classes):
             activation='relu',
             name='net_conv8'
     )(g)
+    # </editor-fold>
+
+    # <editor-fold desc="Traitement des meta-données">
+    meta = Conv2D(
+            filters=16,
+            kernel_size=3,
+            padding='same',
+            dilation_rate=(1,1),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_0'
+    )(ins_meta)
+    meta2 = Conv2D(
+            filters=16,
+            kernel_size=5,
+            padding='same',
+            dilation_rate=(2,2),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_1'
+    )(meta)
+    meta3 = Conv2D(
+            filters=16,
+            kernel_size=5,
+            padding='same',
+            dilation_rate=(4,4),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_2'
+    )(meta2)
+    # </editor-fold>
+
+    i = Concatenate(name='net_Fusion')([b, d, f, h, meta2])
     i = Conv2D(
             filters=num_classes,
             kernel_size=1,
@@ -1619,7 +1656,7 @@ def upscaled_with_skips_and_meta(input_shape, num_classes):
             activation='softmax',
             padding='same',
             name='net_out'
-    )(K.concatenate((b, d, f, h)))
+    )(i)
 
     mod = Model(
             inputs=ins,
@@ -1627,6 +1664,7 @@ def upscaled_with_skips_and_meta(input_shape, num_classes):
     )
 
     return mod
+# </editor-fold>
 
 # A dictionnary linking model builder names to the actual functions.
 models_dict = {

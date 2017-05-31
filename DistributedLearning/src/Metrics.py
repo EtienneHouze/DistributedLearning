@@ -39,8 +39,9 @@ def iou(y_true, y_pred):
     return tf.reduce_mean(TP/Neg,axis=-1)
 
 class Metrics():
-    def __init__(self, citymodel):
-        self.citymodel = citymodel
+    def __init__(self, citymodel, cat = -1):
+        self.numlabs = citymodel.prop_dict['num_labs']+1
+        self.cat = cat
 
     def iou(self, y_true, y_pred):
         """
@@ -53,7 +54,7 @@ class Metrics():
             The value of the mean IOU loss
         """
         # numlabs = y_pred.get_shape()[-1].value
-        numlabs = self.citymodel.prop_dict['num_labs']+1
+        numlabs = self.numlabs
         y_pred = tf.argmax(input=y_pred,
                            axis=-1
                            )
@@ -72,17 +73,25 @@ class Metrics():
                                        axis=np.arange(start=0, stop=nd - 1, step=1)
                                        ),
                          1)
+        Res = TP/Neg
+        if self.cat == -1:
+            return tf.reduce_mean(Res, axis=-1)
+        else:
+            return Res[self.cat]
 
-        return tf.reduce_mean(TP / Neg, axis=-1)
-# Dictionary renferencing metrics
-
-met_dict = {
-    'iou': iou
-}
+# List renferencing metrics
+valid_metrics = ['iou'] + ['cat-iou_' + str(i) for i in range(255)]
 
 def create_metrics(metricname, citymodel):
     met = Metrics(citymodel)
-    fun = None
+    fun = lambda x,y:0
     if metricname == 'iou':
         fun = met.iou
+    else:
+        split = metricname.split('_')
+        if split[0]=='cat-iou':
+            met.cat = int(split[1])
+            fun = met.iou
+        else:
+            print("Bad name")
     return fun

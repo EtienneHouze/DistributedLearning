@@ -9,10 +9,12 @@ import keras
 import numpy as np
 from keras.models import load_model
 from keras.utils import plot_model
+import keras.backend as K
 
 from helpers.BatchGenerator import BatchGenerator
 from src import callbacks, Metrics
 from src import models
+from helpers.Values import weights_dict
 
 
 # TODO : si j'ai le temps, revoir les noms...
@@ -245,7 +247,7 @@ class CityScapeModel:
         """
         metrics = []
         for met in self.prop_dict['metrics']:
-            if met in Metrics.met_dict.keys():
+            if met in Metrics.valid_metrics:
                 metrics.append(Metrics.create_metrics(met,self))
             else:
                 metrics.append(met)
@@ -254,7 +256,7 @@ class CityScapeModel:
                            metrics=metrics,
                            sample_weight_mode=self.prop_dict['w_mode'])
         if 'learning_rate' in self.prop_dict.keys():
-            self.model.optimizer.lr = self.prop_dict['learning_rate']
+            K.set_value(self.model.optimizer.lr, self.prop_dict['learning_rate'])
 
     def load_weights(self, filepath=None):
         if not filepath:
