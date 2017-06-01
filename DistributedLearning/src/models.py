@@ -1513,7 +1513,7 @@ def upscaled_with_skips_and_meta(input_shape, num_classes):
     ins = Input(shape=input_shape,
                 name='net_inputs')
     ins_rgb = Lambda(lambda x: x[:,:,:,0:3], name='rgb_select')(ins)
-    ins_meta = Lambda(lambda x: x[:,:,:,3:-1], name='meta_select')(ins)
+    ins_meta = Lambda(lambda x: x[:,:,:,3:], name='meta_select')(ins)
     # </editor-fold>
     # <editor-fold desc="Traitement dde la couche rgb">
     a = Conv2D(
