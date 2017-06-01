@@ -1683,4 +1683,5 @@ models_dict = {
     'inception_pooling': inception_with_pooling,
     'upscale_skips': upscaled_with_skips,
     'upscale_skips_meta': upscaled_with_skips_and_meta
+    'up_skips_aggreg':upscaled_with_skips_aggreg
 }
