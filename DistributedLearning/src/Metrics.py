@@ -3,6 +3,8 @@ from __future__ import absolute_import, print_function, division
 import numpy as np
 import tensorflow as tf
 import keras.backend as K
+
+from helpers.Values import weights_dict
 # from sklearn.metrics import jaccard_similarity_score
 # TODO : Trouver un moyen de passer la valeur du nombre de labels en évitant d'appeler le tensuer
 def iou(y_true, y_pred):
@@ -79,8 +81,10 @@ class Metrics():
         else:
             return Res[self.cat]
 
+    def weighted_loss(self, output, target):
+
 # List renferencing metrics
-valid_metrics = ['iou'] + ['cat-iou_' + str(i) for i in range(255)]
+valid_metrics = ['iou','weighted_loss'] + ['cat-iou_' + str(i) for i in range(255)]
 
 def create_metrics(metricname, citymodel):
     met = Metrics(citymodel)

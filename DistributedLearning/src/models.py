@@ -1681,5 +1681,6 @@ models_dict = {
     'unpooling': unpooling_4times,
     'test_inception_pooling':test_inception_with_pooling,
     'inception_pooling': inception_with_pooling,
-    'upscale_skips': upscaled_with_skips
+    'upscale_skips': upscaled_with_skips,
+    'upscale_skips_meta': upscaled_with_skips_and_meta
 }
