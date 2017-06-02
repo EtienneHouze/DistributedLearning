@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 import keras.backend as K
 
-from helpers.Values import weights_dict
+from helpers.Values import weights18
 # from sklearn.metrics import jaccard_similarity_score
 # TODO : Trouver un moyen de passer la valeur du nombre de labels en évitant d'appeler le tensuer
 def iou(y_true, y_pred):
@@ -39,6 +39,19 @@ def iou(y_true, y_pred):
                      1)
 
     return tf.reduce_mean(TP/Neg,axis=-1)
+
+def weighted_loss_18(output, target):
+    weights = tf.constant(weights18, dtype=tf.float32)
+
+    return -tf.reduce_mean(tf.reduce_sum(tf.multiply(target,
+                                                     tf.multiply(weights,
+                                                                 tf.log(output + K.epsilon()
+                                                                        )
+                                                                 )
+                                                     ),
+                                         axis=-1
+                                         )
+                           )
 
 class Metrics():
     def __init__(self, citymodel, cat = -1):
@@ -81,7 +94,6 @@ class Metrics():
         else:
             return Res[self.cat]
 
-    def weighted_loss(self, output, target):
 
 # List renferencing metrics
 valid_metrics = ['iou','weighted_loss'] + ['cat-iou_' + str(i) for i in range(255)]

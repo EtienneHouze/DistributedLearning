@@ -252,7 +252,7 @@ class CityScapeModel:
             else:
                 metrics.append(met)
         self.model.compile(optimizer=self.prop_dict['opt'],
-                           loss=self.prop_dict['loss'],
+                           loss=Metrics.weighted_loss_18,
                            metrics=metrics,
                            sample_weight_mode=self.prop_dict['w_mode'])
         if 'learning_rate' in self.prop_dict.keys():
