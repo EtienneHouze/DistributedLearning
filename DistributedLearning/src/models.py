@@ -2312,7 +2312,7 @@ def upscaled_with_skips_and_meta__pool_aggreg(input_shape, num_classes):
 
     return mod
 
-def upscaled_with_skips_and_meta_dropout(input_shape, num_classes):
+def upscaled_with_skips_and_meta_pool_dropout(input_shape, num_classes):
     # <editor-fold desc="Gestion des inputs">
     ins = Input(shape=input_shape,
                 name='net_inputs')
@@ -2467,7 +2467,7 @@ def upscaled_with_skips_and_meta_dropout(input_shape, num_classes):
     )(meta2)
     # </editor-fold>
 
-    i = Concatenate(name='net_Fusion')([b, d, f, h, meta2])
+    i = Concatenate(name='net_Fusion')([b, d, f, h, meta3])
     i = Conv2D(
             filters=num_classes,
             kernel_size=1,
@@ -2642,7 +2642,7 @@ def upscaled_with_skips_and_meta__pool_dropout_aggreg(input_shape, num_classes):
     # </editor-fold>
 
     # <editor-fold desc="Fusion">
-    i = Concatenate(name='net_Fusion')([b, d, f, h, meta2])
+    i = Concatenate(name='net_Fusion')([b, d, f, h, meta3])
     i = Conv2D(
             filters=num_classes,
             kernel_size=1,
@@ -2754,6 +2754,6 @@ models_dict = {
     'up_skips_aggreg':upscaled_with_skips_aggreg,
     'up_skips_meta_pool': upscaled_with_skips_and_meta__pool_aggreg,
     'up_skips_meta_pool_aggreg': upscaled_with_skips_and_meta__pool_aggreg,
-    'up_skips_meta_pool_drop': upscaled_with_skips_and_meta__pool_aggreg,
+    'up_skips_meta_pool_drop': upscaled_with_skips_and_meta_pool_dropout,
     'up_skips_meta_pool_drop_aggreg': upscaled_with_skips_and_meta__pool_dropout_aggreg
 }
