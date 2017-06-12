@@ -3,7 +3,7 @@ from __future__ import absolute_import,print_function,division
 from keras.initializers import random_uniform, zeros
 from keras.layers.core import Activation
 from keras.activations import relu
-from keras.layers import Input, Conv2D, Conv2DTranspose, Lambda, Concatenate, MaxPool2D
+from keras.layers import Input, Conv2D, Conv2DTranspose, Lambda, Concatenate, MaxPool2D, Dropout
 from keras.layers.advanced_activations import PReLU
 from keras.models import Sequential, Model
 import keras.backend as K
@@ -2312,6 +2312,426 @@ def upscaled_with_skips_and_meta__pool_aggreg(input_shape, num_classes):
 
     return mod
 
+def upscaled_with_skips_and_meta_dropout(input_shape, num_classes):
+    # <editor-fold desc="Gestion des inputs">
+    ins = Input(shape=input_shape,
+                name='net_inputs')
+    ins_rgb = Lambda(lambda x: x[:,:,:,0:3], name='rgb_select')(ins)
+    ins_meta = Lambda(lambda x: x[:,:,:,3:], name='meta_select')(ins)
+    # </editor-fold>
+    # <editor-fold desc="Traitement dde la couche rgb">
+    a = Conv2D(
+            filters=16,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=1,
+            activation='relu',
+            name='net_conv0'
+    )(ins_rgb)
+    a = Conv2D(
+            filters=32,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=1,
+            activation='relu',
+            name='net_conv1'
+    )(a)
+    b = Conv2D(
+            filters=64,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=2,
+            activation='relu',
+            name='net_conv2'
+    )(a)
+    b = Dropout(rate=0.2)(b)
+    c = Conv2D(
+            filters=64,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=2,
+            activation='relu',
+            name='net_conv3'
+    )(b)
+    d = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=4,
+            activation='relu',
+            name='net_conv4'
+    )(c)
+    d = Dropout(rate=0.2)(d)
+    e = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=4,
+            activation='relu',
+            name='net_conv5'
+    )(d)
+    f = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=8,
+            activation='relu',
+            name='net_conv6'
+    )(e)
+    f = Dropout(rate = 0.2)(f)
+    g = MaxPool2D(
+            padding='same',
+            name='net_pool'
+    )(f)
+    g = Conv2D(
+            filters=256,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=8,
+            activation='relu',
+            name='net_conv7'
+    )(g)
+    h = Conv2D(
+            filters=512,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=8,
+            activation='relu',
+            name='net_conv8'
+    )(g)
+    h = Conv2D(
+            filters=128,
+            kernel_size=(1,1),
+            padding='same'
+    )(h)
+    h = Lambda(
+            lambda x:tf.image.resize_bilinear(x,size=[input_shape[0],input_shape[1]]),
+            name='net_upscale'
+    )(h)
+    # </editor-fold>
+
+    # <editor-fold desc="Traitement des meta-données">
+    meta = Conv2D(
+            filters=16,
+            kernel_size=3,
+            padding='same',
+            dilation_rate=(1,1),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_0'
+    )(ins_meta)
+    meta2 = Conv2D(
+            filters=16,
+            kernel_size=5,
+            padding='same',
+            dilation_rate=(2,2),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_1'
+    )(meta)
+    meta3 = Conv2D(
+            filters=32,
+            kernel_size=5,
+            padding='same',
+            dilation_rate=(4,4),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_2'
+    )(meta2)
+    # </editor-fold>
+
+    i = Concatenate(name='net_Fusion')([b, d, f, h, meta2])
+    i = Conv2D(
+            filters=num_classes,
+            kernel_size=1,
+            kernel_initializer=random_uniform(),
+            use_bias=False,
+            activation='softmax',
+            padding='same',
+            name='net_out'
+    )(i)
+
+    mod = Model(
+            inputs=ins,
+            outputs=i,
+    )
+
+    return mod
+
+def upscaled_with_skips_and_meta__pool_dropout_aggreg(input_shape, num_classes):
+
+    # <editor-fold desc="Gestion des inputs">
+    ins = Input(shape=input_shape,
+                name='net_inputs')
+    ins_rgb = Lambda(lambda x: x[:,:,:,0:3], name='rgb_select')(ins)
+    ins_meta = Lambda(lambda x: x[:,:,:,3:], name='meta_select')(ins)
+    # </editor-fold>
+    # <editor-fold desc="Traitement dde la couche rgb">
+    a = Conv2D(
+            filters=16,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=1,
+            activation='relu',
+            name='net_conv0'
+    )(ins_rgb)
+    a = Conv2D(
+            filters=32,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=1,
+            activation='relu',
+            name='net_conv1'
+    )(a)
+    b = Conv2D(
+            filters=64,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=2,
+            activation='relu',
+            name='net_conv2'
+    )(a)
+    b = Dropout(rate=0.2)(b)
+    c = Conv2D(
+            filters=64,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=2,
+            activation='relu',
+            name='net_conv3'
+    )(b)
+    d = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=4,
+            activation='relu',
+            name='net_conv4'
+    )(c)
+    d = Dropout(rate=0.2)(d)
+    e = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=4,
+            activation='relu',
+            name='net_conv5'
+    )(d)
+    f = Conv2D(
+            filters=128,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=8,
+            activation='relu',
+            name='net_conv6'
+    )(e)
+    f = Dropout(rate = 0.2)(f)
+    g = MaxPool2D(
+            padding='same',
+            name='net_pool'
+    )(f)
+    g = Conv2D(
+            filters=256,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=8,
+            activation='relu',
+            name='net_conv7'
+    )(g)
+    h = Conv2D(
+            filters=512,
+            kernel_size=(3, 3),
+            kernel_initializer=random_uniform(),
+            use_bias=True,
+            bias_initializer=zeros(),
+            padding='same',
+            dilation_rate=8,
+            activation='relu',
+            name='net_conv8'
+    )(g)
+    h = Conv2D(
+            filters=128,
+            kernel_size=(1, 1),
+            padding='same'
+    )(h)
+    h = Lambda(
+            lambda x: tf.image.resize_bilinear(x, size=[input_shape[0], input_shape[1]]),
+            name='net_upscale'
+    )(h)
+    # </editor-fold>
+
+    # <editor-fold desc="Traitement des meta-données">
+    meta = Conv2D(
+            filters=16,
+            kernel_size=3,
+            padding='same',
+            dilation_rate=(1,1),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_0'
+    )(ins_meta)
+    meta2 = Conv2D(
+            filters=16,
+            kernel_size=5,
+            padding='same',
+            dilation_rate=(2,2),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_1'
+    )(meta)
+    meta3 = Conv2D(
+            filters=16,
+            kernel_size=5,
+            padding='same',
+            dilation_rate=(4,4),
+            activation='relu',
+            use_bias=True,
+            name='net_conv_meta_2'
+    )(meta2)
+    # </editor-fold>
+
+    # <editor-fold desc="Fusion">
+    i = Concatenate(name='net_Fusion')([b, d, f, h, meta2])
+    i = Conv2D(
+            filters=num_classes,
+            kernel_size=1,
+            kernel_initializer=random_uniform(),
+            use_bias=False,
+            activation='softmax',
+            padding='same',
+            name='net_out'
+    )(i)
+    # </editor-fold>
+
+    # <editor-fold desc="Aggregation">
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_1'
+    )(i)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            dilation_rate=2,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_2'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            dilation_rate=4,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_3'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            dilation_rate=8,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_4'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            dilation_rate=16,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_5'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=3,
+            dilation_rate=1,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='relu',
+            padding='same',
+            name='aggreg_6'
+    )(b)
+    b = Conv2D(
+            filters=num_classes,
+            kernel_size=1,
+            dilation_rate=1,
+            use_bias=False,
+            kernel_initializer=random_uniform(),
+            activation='softmax',
+            padding='same',
+            name='aggreg_7'
+    )(b)
+    # </editor-fold>
+
+    mod = Model(
+            inputs=ins,
+            outputs=b,
+    )
+
+    return mod
 # </editor-fold>
 
 # A dictionnary linking model builder names to the actual functions.
@@ -2333,5 +2753,7 @@ models_dict = {
     'upscale_skips_meta': upscaled_with_skips_and_meta,
     'up_skips_aggreg':upscaled_with_skips_aggreg,
     'up_skips_meta_pool': upscaled_with_skips_and_meta__pool_aggreg,
-    'up_skips_meta_pool_aggreg': upscaled_with_skips_and_meta__pool_aggreg
+    'up_skips_meta_pool_aggreg': upscaled_with_skips_and_meta__pool_aggreg,
+    'up_skips_meta_pool_drop': upscaled_with_skips_and_meta__pool_aggreg,
+    'up_skips_meta_pool_drop_aggreg': upscaled_with_skips_and_meta__pool_dropout_aggreg
 }

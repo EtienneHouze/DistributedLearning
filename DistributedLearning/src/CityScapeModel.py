@@ -174,21 +174,19 @@ class CityScapeModel:
         else:
             print('Error : no building function defined')
 
-    # DEPRECATED
-    """
-        def add_network_from_builder(self, building_function,in_shape=None,out_shape = None):
-                Adds a network from the builder function name provided, with corresponding input and output shapes.
-                The list (building_function,in_shape,out_shape) is the appended to the 'net_builder' key of the dictionnary.
-            if (building_function in models.models_dict.keys()):
-                if (not in_shape):
-                    in_shape = self.prop_dict['input_shape']
-                if (not out_shape) :
-                    out_shape = self.prop_dict['output_shape']
-                self.models.append(models.models_dict[building_function](input_shape = in_shape, num_classes = out_shape[-1]))
-                self.prop_dict['net_builder'].append([building_function,in_shape,out_shape])
-            else:
-                print("Please enter valid building function")
-    """
+
+#     def add_network_from_builder(self, building_function,in_shape=None,out_shape = None):
+#             Adds a network from the builder function name provided, with corresponding input and output shapes.
+#             The list (building_function,in_shape,out_shape) is the appended to the 'net_builder' key of the dictionnary.
+#         if (building_function in models.models_dict.keys()):
+#             if (not in_shape):
+#                 in_shape = self.prop_dict['input_shape']
+#             if (not out_shape) :
+#                 out_shape = self.prop_dict['output_shape']
+#             self.models.append(models.models_dict[building_function](input_shape = in_shape, num_classes = out_shape[-1]))
+#             self.prop_dict['net_builder'].append([building_function,in_shape,out_shape])
+#         else:
+#             print("Please enter valid building function")
 
     def print_model(self):
         """
@@ -260,7 +258,7 @@ class CityScapeModel:
 
     def load_weights(self, filepath=None):
         if not filepath:
-            self.model.load_weights(os.path.join(self.prop_dict['directory'], 'saves', 'weights_.h5'))
+            self.model.load_weights(os.path.join(self.prop_dict['directory'], 'saves', self.prop_dict['name']))
         else:
             self.model.load_weights(filepath, by_name=True)
 
