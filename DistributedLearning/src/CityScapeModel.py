@@ -433,3 +433,16 @@ class CityScapeModel:
             means[key] /= valdirsize
         print("The results over the valuation set are :")
         print(means)
+
+    def evaluate_full(self, validation_dir, validation_option = '', logfile=None):
+        valdirsize = len([name for name in os.listdir(validation_dir) if os.path.isfile(os.path.join(validation_dir,name)) and 'im' in name])
+        val_gen = BatchGenerator(traindir=validation_dir,
+                                 city_model=self,
+                                 trainsetsize=valdirsize,
+                                 batchsize=1,
+                                 traindirsize=valdirsize)
+        counter = 0
+        gen = val_gen.generate_input_only(validation_option)
+        metrics = ['acc']
+        for met in Metrics.valid_metrics:
+            metrics.append(Metrics.create_metrics(met,self))
