@@ -258,7 +258,7 @@ class CityScapeModel:
 
     def load_weights(self, filepath=None):
         if not filepath:
-            self.model.load_weights(os.path.join(self.prop_dict['directory'], 'saves', self.prop_dict['name']))
+            self.model.load_weights(os.path.join(self.prop_dict['directory'], 'saves', self.prop_dict['name']), by_name=True)
         else:
             self.model.load_weights(filepath, by_name=True)
 
