@@ -2631,7 +2631,7 @@ def upscaled_with_skips_and_meta__pool_dropout_aggreg(input_shape, num_classes):
             name='net_conv_meta_1'
     )(meta)
     meta3 = Conv2D(
-            filters=16,
+            filters=32,
             kernel_size=5,
             padding='same',
             dilation_rate=(4,4),
